@@ -1,0 +1,1 @@
+auditorium_id, auditorium_type, auditorium_capacity, auditorium_rows, auditorium_columns 

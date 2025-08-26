@@ -1,0 +1,2 @@
+seat_id, row_position, column_position, availability
+
