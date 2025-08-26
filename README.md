@@ -35,8 +35,10 @@ Link: https://git-scm.com/
 ### 2. Setting up user account
 in VS Code terminal, run:
     git --version
-    git config --global user.name "username"
-    git config --global user.email "email"
+
+    git config --global user.name "username" (GitHub username)
+
+    git config --global user.email "email" (GitHub email account)
 
 ### 3. Clone remote repository onto local machine
 open Command Palette and type "Git: Clone" then paste:
