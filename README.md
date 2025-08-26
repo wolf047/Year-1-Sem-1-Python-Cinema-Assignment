@@ -34,6 +34,7 @@ Link: https://git-scm.com/
 
 ### 2. Setting up user account
 in VS Code terminal, run:
+
     git --version
 
     git config --global user.name "username" (GitHub username)
