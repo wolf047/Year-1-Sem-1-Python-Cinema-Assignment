@@ -53,7 +53,7 @@ then choose a folder to save the repository in
 - git commit (save work locally; add description)
 - git push <remote> <branch> (usually git push origin main, or git push origin <branch_name>; uploads your committed edits)
 - git pull <remote> <branch> (usually git push origin main; downloads remote copy to your local location)
--- git merge <branch_to_be_merged> (merge specified branch to the branch that you are currently in)
+- git merge <branch_to_be_merged> (merge specified branch to the branch that you are currently in)
 
 #### Beginning:
     git checkout -b something
