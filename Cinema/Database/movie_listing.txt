@@ -1,3 +1,4 @@
 movie_id, movie_name, release_date, running_time, genre, classification, spoken_language, subtitle_language, director, casts, description, adult_price, discounted_price
 M0001, "How to Train Your Dragon", "2 Apr 2025", 125, Adventure|Fantasy, U, English, Malay|Chinese, "Dean DeBlois", "Mason Thames|Nico Parkerr|Gabriel Howell|Julian Dennison", "Viking boy befriends dragon."
 M0002, "The Fantastic Four: First Steps", "24 Jul 2025", 120, Action, 13, English, Malay, "Matt Shakman", "Pedro Pascal|Vanessa Kirby", "Defending the world from space gods"
+M0003, "The Shadow's Edge", "14 Aug 2025", 143, Action, 16, Chinese, English, "Larry Yang", "Jackie Chan|Zhang Zifeng|Leung Ka Fai Tony", "Tracking some criminals"

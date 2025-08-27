@@ -1,1 +1,3 @@
 discount_id, discount_name, discount_amount, discount_policies
+
+D01, "Tuesday Specials", 50%, "only before 12 noon"
