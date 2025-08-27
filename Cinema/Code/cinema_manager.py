@@ -31,25 +31,38 @@ def update_entries(filename, entry_id, position, entry_details):
                 updated_entries.append(", ".join(entry) + "\n")
             else:
                 updated_entries.append(", ".join(entry) + "\n")
-        with open(filename, "w") as f:
-            f.writelines(updated_entries)
+    with open(filename, "w") as f:
+        f.writelines(updated_entries)
+
+def remove_entries(filename, entry_id):
+    with open(filename, "r") as f:
+        entries = f.readlines()
+        updated_entries = []
+        for entry in entries:
+            entry = [i.strip() for i in entry.strip().split(",")]
+            if entry[0] != entry_id:
+                updated_entries.append(", ".join(entry) + "\n")
+    with open(filename, "w") as f:
+        f.writelines(updated_entries)
+
+
+def id_counter(location, counted):
+    filename = f'{location}/{counted}_id_counter.txt'
+    try:
+        with open(filename, "r") as f:
+            content = f.read().strip()
+            id_no = int(content) if content else 1
+    except FileNotFoundError:
+        id_no = 1
+
+    with open(filename, "w") as f:
+        f.write(str(id_no + 1))
+
+    return id_no
 
 
 def add_movie_listing():
-    def movie_id_counter():
-        try:
-            with open("Cinema/Database/movie_id_counter.txt", "r") as f:
-                content = f.read().strip()
-                movie_id_no = int(content) if content else 1
-        except FileNotFoundError:
-            movie_id_no = 1
-
-        with open("Cinema/Database/movie_id_counter.txt", "w") as f:
-            f.write(str(movie_id_no + 1))
-
-        return movie_id_no
-
-    movie_id_no = movie_id_counter()
+    movie_id_no = id_counter("Cinema/Database/", "movie")
     movie_id = f'M{movie_id_no:04}'
 
     movie_name = input("Enter movie name: ")
@@ -99,9 +112,7 @@ def add_movie_listing():
                classification, spoken_language, subtitle_language, director, casts, description]
 
     add_entries("Cinema/Database/movie_listing.txt", listing)
-
-
-# add_movie_listing()
+    print(f'Listing for {movie_id} created.')
 
 
 def update_movie_listing():
@@ -140,7 +151,7 @@ def update_movie_listing():
 
                         classification_selection = int(
                             input("Select updated classification (enter number 1-7): "))
-                        
+
                         match classification_selection:
                             case 1:
                                 classification = classification_options[0]
@@ -177,24 +188,74 @@ def update_movie_listing():
                         valid_selection = False
                 if valid_selection:
                     update_entries("Cinema/Database/movie_listing.txt",
-                            movie_id_edit, detail_selection, update_details)
-
+                                   movie_id_edit, detail_selection, update_details)
+                    print(f'Listing for {movie_id_edit} updated.')
 
 
 def remove_movie_listing():
-    pass
+    movie_id_remove = input("Enter ID of movie to be removed: ")
+    remove_entries("Cinema/Database/movie_listing.txt", movie_id_remove)
+    print(f'Listing for {movie_id_remove} removed.')
 
 
 def create_showtime():
-    pass
+    showtime_id_no = id_counter("Cinema/Database/", "showtime")
+    showtime_id = f'M{showtime_id_no:05}'
+
+    movie_id = input("Enter movie ID: ")
+    auditorium_id = input("Enter auditorium ID: ")
+    date = input("Enter date: ")
+    start_time = input("Enter start time: ")
+    end_time = input("Enter end time: ")
+
+    showtime = [showtime_id, movie_id,
+                auditorium_id, date, start_time, end_time]
+
+    add_entries("Cinema/Database/movie_showtimes.txt", showtime)
+    print(f'Showtime {showtime_id} for {movie_id} created.')
 
 
 def update_showtime():
-    pass
+    showtime_id_edit = input("Enter ID of showtime to be edited: ")
+
+    with open("Cinema/Database/movie_showtime.txt", "r") as f:
+        details = [detail.strip() for detail in f.readline().split(",")]
+
+        for line in f:
+            entry = [i.strip() for i in line.split(",")]
+
+            if entry[0] == showtime_id_edit:
+                for index, field in enumerate(details[1: 6], start=1):
+                    print(f'[{index}] {field}')
+
+                detail_selection = int(
+                    input("Select detail (enter number 1-5): "))
+                valid_selection = True
+
+                match detail_selection:
+                    case 1:
+                        update_details = input("Enter updated movie ID: ")
+                    case 2:
+                        update_details = input("Enter updated auditorium ID: ")
+                    case 3:
+                        update_details = input("Enter updated date: ")
+                    case 4:
+                        update_details = input("Enter updated start time: ")
+                    case 5:
+                        update_details = input("Enter updated end time: ")
+                    case _:
+                        print("Invalid option")
+                        valid_selection = False
+                if valid_selection:
+                    update_entries("Cinema/Database/movie_showtimes.txt",
+                                   showtime_id_edit, detail_selection, update_details)
+                    print(f'Listing for {showtime_id_edit} updated.')
 
 
 def remove_showtime():
-    pass
+    showtime_id_remove = input("Enter ID of showtime to be removed: ")
+    remove_entries("Cinema/Database/movie_showtimes.txt", showtime_id_remove)
+    print(f'Listing for {showtime_id_remove} removed.')
 
 
 def set_ticket_price():
