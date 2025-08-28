@@ -2,6 +2,7 @@
 # - Add, update, or remove movie listings.
 # - Create and manage showtime schedules(movie, auditorium, time).
 # - Set ticket prices and apply discount policies.
+# - Create 
 # - View overall booking reports and revenue summaries.
 
 def lint_entries(value):
@@ -54,7 +55,7 @@ def remove_entries(filename, entry_id):
 
 
 def id_counter(location, counted):
-    filename = f'{location}/{counted}_id_counter.txt'
+    filename = f'{location}/COUNTER_{counted}_id.txt'
     try:
         with open(filename, "r") as f:
             content = f.read().strip()
@@ -222,8 +223,6 @@ def add_showtime():
     print(f'Showtime {showtime_id} for {movie_id} created.')
 
 
-add_showtime()
-
 
 def update_showtime():
     showtime_id_edit = input("Enter ID of showtime to be edited: ")
@@ -267,13 +266,17 @@ def remove_showtime():
     remove_entries("Cinema/Database/movie_showtimes.txt", showtime_id_remove)
     print(f'Listing for {showtime_id_remove} removed.')
 
-
+# discount_id, discount_name, discount_type, discount_amount, discount_rate, discount_policies
 def add_discount():
     discount_id_no = id_counter("Cinema/Database/", "discount")
     discount_id = f'D{discount_id_no:02}'
 
     discount_name = input("Enter discount name: ")
-    discount_amount = input("Enter discount amount: ")
+    
+    discount_type_options = ["fixed", "percentage"]
+    for index, field in enumerate(discount_type_options[0: 2], start=1):
+        print(f'[{index}] {field}')
+    discount_type = input("Enter discount amount: ")
     discount_policies = input("Enter discount policies: ")
 
     discount = [discount_id, discount_name, discount_amount, discount_policies]
@@ -335,28 +338,25 @@ def add_ticket_price():
     match prices_edit_selection:
         case 1:
             with open("Cinema/Database/movie_listing.txt", "r") as f:
-            entries = f.readlines()
-            updated_entries = []
-            for entry in entries:
-                entry = [i.strip() for i in entry.strip().split(",")]
-                if entry[0] == movie_id_price:
-                    adult_price = entry[11]
+                entries = f.readlines()
+                updated_entries = []
+                for entry in entries:
+                    entry = [i.strip() for i in entry.strip().split(",")]
+                    if entry[0] == movie_id_price:
+                        adult_price = entry[11]
         case 2: 
             with open("Cinema/Database/movie_listing.txt", "r") as f:
-            entries = f.readlines()
-            updated_entries = []
-            for entry in entries:
-                entry = [i.strip() for i in entry.strip().split(",")]
-                if entry[0] == movie_id_price:
-                    adult_price = entry[11]
-                    discounted_price = entry[12]
+                entries = f.readlines()
+                updated_entries = []
+                for entry in entries:
+                    entry = [i.strip() for i in entry.strip().split(",")]
+                    if entry[0] == movie_id_price:
+                        adult_price = entry[11]
+                        discounted_price = entry[12]
         case _:
             pass
 
-    def set_adult_price():
-        
 
-    def set_discounted_price():
         
 
 def update_ticket_price():

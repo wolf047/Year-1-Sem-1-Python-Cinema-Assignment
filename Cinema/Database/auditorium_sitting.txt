@@ -1,2 +1,2 @@
-seat_id, row_position, column_position, availability
+seat_id, auditorium_id, seat_no, row_position, column_position
 
