@@ -1,0 +1,37 @@
+AUDITORIUM_INFO
+auditorium_id (str, PK), auditorium_type (str), auditorium_capacity (int), auditorium_rows (int), auditorium_columns (int)
+- I'm thinking auditorium_id to be formatted as AUD{number:02}
+- auditorium_type is like 2D, IMAX, etc
+- auditorium_rows is how many rows the audi has, for creating seat seat_ids. Likewise for auditorium_columns
+
+AUDITORIUM_SITTING
+seat_id (str, PK), auditorium_id (str), row_position (1 alphabet), column_position (int)
+- I plan for seat_id to be formatted as S{row_position}{column_position:02}
+- Thinking row_position will be an alphabet
+- column_position is integer
+
+DISCOUNT_POLICIES
+discount_id (str, PK), discount_name (str), discount_type (str), discount_amount (int), discount_rate (float), discount_policies (str)
+- contains different types of discounts that can be applied to any movie listing / showtime
+- discount_type is fixed amount or percentage
+- if fixed, then discount amount in discount_amount and discount_rate is None
+- if percentage, then discount_amount is None and discount_rate stores discount percentage in decimal formatted
+- discount_policies like terms and conditions, etc
+
+MOVIE_BOOKINGS
+booking_id (str, PK), showtime_id (str), customer_id (str), seat_ids (list), normal_discounted_tickets (list)
+- booking_id probably format as B{number:04}?
+- seat_ids stores all the seats booked in that booking, stored as seat_id_1|seat_id_2|seat_id_3|etc
+- normal_discounted_tickets stores how many normal and how many discounted tickets, stored as no_of_normal|no_of_discounted
+
+
+MOVIE_LISTING
+movie_id (str, PK), movie_name (str), release_date (str), running_time (int), genre (list), classification (str), spoken_language (str), subtitle_language (list), directors (list), casts (list), description (str), normal_price (float), discounted_price (float)
+- running_time is the total duration of the movie in minutes
+- classification is like above 18, all those stuff
+
+
+MOVIE_SHOWTIMES
+showtime_id (str, PK), movie_id (str), auditorium_id (str), date (str), start_time (str), end_time (str)
+- showtime_id I'm using as ST{number:04} for now
+- start_time is time when movie starts, likewise for end_time. Idk to use str or int yet
