@@ -1,4 +1,4 @@
-showtime_id, movie_id, auditorium_id, date, start_time, end_time
+showtime_id, movie_id, auditorium_id, date, start_time, end_time, normal_price, discounted_price
 ST00007, M0002, AUD02, "30 Aug 2025", 1200, 1400
 ST00008, M0002, AUD03, "30 Sep 2025", 1200, 1400
 ST00009, M0009, AUD02, "30 Aug 2025", 1200, 1400

@@ -1,3 +1,6 @@
+def main_cinema_manager():
+
+
 def lint_entries(value):
     if isinstance(value, list):
         value = "|".join(value)
