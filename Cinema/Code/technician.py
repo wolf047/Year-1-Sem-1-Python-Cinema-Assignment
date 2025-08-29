@@ -1,10 +1,14 @@
+# TODO: 
+# put your data into a txt file, only code here in py file. Use "with open(...) as f:..." to read, write, append to txt file. For screenings, use movie_showtimes.txt
+# line 43, line 57, line 81, line 104
+# also make sure to keep spacing and capitalisation consistent
 screenings = [
     {"Movie": "Movie 1", "Time": "30-08-2025 20:00", "Auditorium": "hall 1"},
      {"Movie": "Movie 2", "Time": "30-08-2025 21:00", "Auditorium": "hall 2"},
 ]
 
-equipment_status = {"Hall 1": {"Projector": "Ready", "Sound": "Ready","Air Conditioner": "Ready"},
-                    "Hall 2": {"Projector": "Ready", "Sound": "Ready","Air Conditioner": "Ready"}
+equipment_status = {"Hall 1": {"Projector": "Ready", "Sound": "Ready", "Air Conditioner": "Ready"},
+                    "Hall 2": {"Projector": "Ready", "Sound": "Ready", "Air Conditioner": "Ready"}
 }
 
 technical_issues = []
@@ -12,7 +16,7 @@ technical_issues = []
 def view_schedules():
     print("n--- Upcoming Movie Screening Schedule ---")
     for s in screenings:
-        print(f"Movie: {s['Movie']},Time: {s['Time']}, Audoitorium: {s['Auditorium']}")
+        print(f"Movie: {s['Movie']},Time: {s['Time']}, Auditorium: {s['Auditorium']}")
     
     print("------------------------------------------\n")
 
@@ -36,6 +40,7 @@ def report_issue():
         print("Unexpected Error occured while reporting issue!\n")
 
 def comfirm_readiness():
+    # Maybe give them a list of halls to choose from? Otherwise idk what I should type, plus capitalisaton errors can occur if I type 'hall 1' instead. Suggest give numbered list of halls and have them enter a number to select the hall.
     hall = input("Enter Auditorium to Comfirm Readiness: ")
     if hall not in equipment_status:
         print("invalid hall name!\n")
@@ -44,11 +49,12 @@ def comfirm_readiness():
     print(f"\nEquipment Status for {hall}: ")
     for eq, status in equipment_status[hall].items():
         print(f"{eq}: {status}")
-    print()
+    print() 
 
 
 def mark_equipment():
     try:
+        # Would also suggest using numbered lists for all below. Lesser chance of typo errors
         hall = input("Enter Auditorium (Hall 1/Hall 2): ")
         if hall not in equipment_status:
             raise ValueError("Invalid auditorium!")
@@ -72,6 +78,7 @@ def mark_equipment():
 
 # Main Menu
 def main():
+    # How do they choose an option? Do they type "1." or "1" or "1. View Upcoming Screenings"? Suggest to clarify. 
     while True:
         print("=== Technician Management Menu ===")
         print("1. View Upcoming Screenings")
@@ -95,6 +102,6 @@ def main():
         else:
             print("Invalid choice. Try again!\n")
 
-
+# cannot use object-oriented programming. Actually, what's the purpose of this code?
 if __name__ == "__main__":
     main()
