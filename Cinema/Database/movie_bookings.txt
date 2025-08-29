@@ -1,1 +1,4 @@
-booking_id, showtime_id, customer_id, seat_id
+booking_id, showtime_id, customer_id, seat_ids, normal_discounted_tickets
+B0001, ST00007, C0001, S01|S02|S03, 2|1
+B0002, ST00008, C0002, S04, 1|0
+B0003, ST00009, C0003, S05|S06, 2|0
