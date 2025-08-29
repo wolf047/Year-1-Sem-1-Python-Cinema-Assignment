@@ -1,15 +1,3 @@
-# Cinema Manager
-# - Add, update, or remove movie listings.
-# - Create and manage showtime schedules(movie, auditorium, time).
-# - Set ticket prices and apply discount policies.
-# - Create
-# - View overall booking reports and revenue summaries.
-
-# TODO:
-# - view_booking_reports()
-# - view_revenue_summary()
-
-
 def lint_entries(value):
     if isinstance(value, list):
         value = "|".join(value)
@@ -116,13 +104,14 @@ def add_movie_listing():
     spoken_language = input("Enter spoken language (full form): ")
     subtitle_language = [language.strip() for language in input(
         "Enter subtitle languages (full form, enter comma-delimited list): ").split(",")]
-    director = input("Enter director name: ")
+    directors = [director.strip() for director in input(
+        "Enter cast names (enter comma-delimited list): ").split(",")]
     casts = [cast.strip() for cast in input(
         "Enter cast names (enter comma-delimited list): ").split(",")]
     description = input("Enter description: ")
 
     listing = [movie_id, movie_name, release_date, running_time, genre,
-               classification, spoken_language, subtitle_language, director, casts, description]
+               classification, spoken_language, subtitle_language, directors, casts, description]
 
     add_entries("Cinema/Database/movie_listing.txt", listing)
     print(f'Listing for {movie_id} created.')
@@ -470,4 +459,33 @@ def view_booking_reports():
 
 
 def view_revenue_summary():
-    pass
+    normal_total_revenue = 0
+    discounted_total_revenue = 0
+    with open("Cinema/Database/movie_bookings.txt", "r") as f:
+        next(f)
+        for line in f:
+            booking = [i.strip() for i in line.split(",")]
+            showtime_id = booking[1]
+            tickets = [int(i.strip()) for i in booking[4].split("|")]
+
+            with open("Cinema/Database/movie_showtimes.txt", "r") as f:
+                for line in f:
+                    showtime = [i.strip() for i in showtime.split(",")]
+                    if showtime[0] == showtime_id:
+                        movie_id = showtime[1]
+
+                        with open("Cinema/Database/movie_listing.txt", "r") as f:
+                            for line in f:
+                                listing = [i.strip()
+                                           for i in listing.split(",")]
+                                if listing[0] == movie_id:
+                                    normal_total_revenue += tickets[0] * \
+                                        listing[11]
+                                    discounted_total_revenue += tickets[1] * \
+                                        listing[12]
+                    else:
+                        print("Invalid something")  # ERROR MESSAGEEEEEEE
+
+    total_revenue = normal_total_revenue + discounted_total_revenue
+    print(
+        f'Revenue from normal tickets: {normal_total_revenue}\nRevenue from discounted tickets: {discounted_total_revenue}\nTotal revenue: {total_revenue}')
