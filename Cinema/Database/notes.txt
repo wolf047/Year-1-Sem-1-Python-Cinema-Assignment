@@ -1,5 +1,5 @@
 AUDITORIUM_INFO
-auditorium_id (str, PK), auditorium_type (str), auditorium_capacity (int), auditorium_rows (int), auditorium_columns (int)
+auditorium_id (str, PK), auditorium_type (str), auditorium_capacity (int), auditorium_rows (int), auditorium_columns (int), default_normal_price (float)
 - I'm thinking auditorium_id to be formatted as AUD{number:02}
 - auditorium_type is like 2D, IMAX, etc
 - auditorium_rows is how many rows the audi has, for creating seat seat_ids. Likewise for auditorium_columns
@@ -25,7 +25,7 @@ booking_id (str, PK), showtime_id (str), customer_id (str), seat_ids (list), nor
 - normal_discounted_tickets stores how many normal and how many discounted tickets, stored as no_of_normal|no_of_discounted
 
 MOVIE_LISTING
-movie_id (str, PK), movie_name (str), release_date (str), running_time (int), genre (list), classification (str), spoken_language (str), subtitle_language (list), directors (list), casts (list), description (str)
+movie_id (str, PK), movie_name (str), release_date (str), running_time (int), genre (list), classification (str), spoken_language (str), subtitle_language (list), directors (list), casts (list), description (str), eligibility_for_discount (bool)
 - running_time is the total duration of the movie in minutes
 - classification is like above 18, all those stuff
 

@@ -1,8 +1,8 @@
-auditorium_id, auditorium_type, auditorium_capacity, auditorium_rows, auditorium_columns
-AUD01, 2D, 70, 7, 10
-AUD02, 2D, 96, 8, 12
-AUD03, 2D, 140, 10, 14
-AUD04, 2D , 204, 12, 17
-AUD05, IMAX, 120, 6, 20
-AUD06, IMAX, 300, 12, 25
-AUD07, 4DX, 40, 4, 10
+auditorium_id, auditorium_type, auditorium_capacity, auditorium_rows, auditorium_columns, default_normal_price
+AUD01, 2D, 70, 7, 10, 24
+AUD02, 2D, 96, 8, 12, 24
+AUD03, 2D, 140, 10, 14, 24
+AUD04, 2D , 204, 12, 17, 24
+AUD05, IMAX, 120, 6, 20, 35
+AUD06, IMAX, 300, 12, 25, 35
+AUD07, 4DX, 40, 4, 10, 72
