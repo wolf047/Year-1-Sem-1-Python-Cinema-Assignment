@@ -29,7 +29,6 @@ movie_id (str, PK), movie_name (str), release_date (str), running_time (int), ge
 - running_time is the total duration of the movie in minutes
 - classification is like above 18, all those stuff
 
-
 MOVIE_SHOWTIMES
 showtime_id (str, PK), movie_id (str), auditorium_id (str), date (str), start_time (str), end_time (str), normal_price (float), discounted_price (float)
 - showtime_id I'm using as ST{number:04} for now
