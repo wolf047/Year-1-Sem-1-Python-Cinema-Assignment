@@ -1,0 +1,12 @@
+{
+    "Hall 1": {
+        "Projector": "Under Maintenance",
+        "Sound": "Ready",
+        "Air Conditioner": "Under Maintenance"
+    },
+    "Hall 2": {
+        "Projector": "Ready",
+        "Sound": "Under Maintenance",
+        "Air Conditioner": "Ready"
+    }
+}
