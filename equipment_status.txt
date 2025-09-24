@@ -10,3 +10,12 @@
         "Air Conditioner": "Ready"
     }
 }
+
+
+auditorium_id, equipment, status
+AUD01, projector, "under maintainance"
+AUD01, sound, ready
+
+auditorium_id, projector, sound, air_conditioner
+AUD01, "under maintainance", ready, "under maintainance"
+

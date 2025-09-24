@@ -120,7 +120,7 @@
 
                 Available actions:
                 -----------------------------
-                [1] View movie listing
+                [1] View movie listings
                 [2] Add movie listing
                 [3] update movie listing
                 [4] Remove movie listing

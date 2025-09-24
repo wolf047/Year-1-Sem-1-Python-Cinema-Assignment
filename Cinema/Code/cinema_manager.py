@@ -37,33 +37,53 @@
 from datetime import datetime
 import time
 import os
-import sys
 
 RED = '\033[91m'
 GREEN = '\033[92m'
-CYAN = '\033[96m'
 RESET = '\033[0m'
 
 
-def color_prompt_message(prompt):
-    colored_prompt = CYAN + prompt + RESET
-    return colored_prompt
-
-
 def color_error_message(prompt):
+    """
+    Wraps a string with ANSI escape codes to display it in red.
+
+    Args:
+        prompt (str): The error message to be colorized.
+
+    Returns:
+        str: The error message wrapped with red color and reset codes.
+    """
+
     colored_prompt = RED + prompt + RESET
     return colored_prompt
 
 
 def color_completion_message(prompt):
+    """
+    Wraps a string with ANSI escape codes to display it in green.
+
+    Args:
+        prompt (str): The completion message to be colorized.
+
+    Returns:
+        str: The completion message wrapped with green color and reset codes.
+    """
     colored_prompt = GREEN + prompt + RESET
     return colored_prompt
 
 
 def clear_terminal():
+    """Clears the terminal screen.
+
+    Returns:
+        None
+    """
     # For Windows
     if os.name == 'nt':
         _ = os.system('cls')
+    # For macOS and Linux
+    else:
+        _ = os.system('clear')
 
 
 def validate_yes_no(prompt):
@@ -116,7 +136,8 @@ def validate_float(prompt):
             value = round(float(input(prompt).strip()), 2)
             return value
         except ValueError:
-            print(color_error_message("Invalid input: please enter a float to 2 decimals (eg. 0.00)."))
+            print(color_error_message(
+                "Invalid input: please enter a float to 2 decimals (eg. 0.00)."))
 
 
 def validate_date(prompt):
@@ -134,7 +155,8 @@ def validate_date(prompt):
             value = datetime.strptime(input(prompt).strip(), "%d-%m-%Y")
             return value.strftime("%d-%m-%Y")
         except ValueError:
-            print(color_error_message("Invalid input: please enter a date in the format DD-MM-YYYY (eg. 31-12-2000)."))
+            print(color_error_message(
+                "Invalid input: please enter a date in the format DD-MM-YYYY (eg. 31-12-2000)."))
 
 
 def validate_time(prompt):
@@ -152,7 +174,8 @@ def validate_time(prompt):
             value = datetime.strptime(input(prompt).strip(), "%H%M")
             return value.strftime("%H%M")
         except ValueError:
-            print(color_error_message("Invalid input: please enter a time in the format HHMM (eg. 2359)."))
+            print(color_error_message(
+                "Invalid input: please enter a time in the format HHMM (eg. 2359)."))
 
 
 def lint_entry(value):
@@ -169,8 +192,6 @@ def lint_entry(value):
         value = "|".join(value)
     value = str(value)
     return f'"{value}"' if "," in value or " " in value else value
-
-
 
 
 def add_entry(filename, entry_detail_list):
@@ -246,9 +267,7 @@ def remove_entry(filename, entry_id):
 
 def view_all_entries(filename):
     """
-    Displays all entries from a text file in a formatted table.
-
-    Assumes the first line is a comma-separated header. Each subsequent line is parsed and aligned by column.
+    Displays all entries from a text file.
 
     Args:
         filename (str): Path to the file containing the entries.
@@ -257,23 +276,16 @@ def view_all_entries(filename):
         None
     """
     with open(filename, "r") as f:
-        header = f.readline().strip().upper().split(",")
-        entries = [[i.strip() for i in line.strip().split(",")]
-                   for line in f.readlines()]
-        all_rows = [header] + entries
-        col_widths = [max(len(i.strip()) for i in col)
-                      for col in zip(*all_rows)]
-
-    def format_row(row, widths):
-        return "   ".join(item.strip().ljust(width) for item, width in zip(row, widths))
-
-    print(format_row(header, col_widths))
-    print("-" * sum(col_widths) + "-" * (3 * (len(col_widths) - 1)))
-    if not entries:
-        print("No entries found.")
-        return
-    for entry in entries:
-        print(format_row(entry, col_widths))
+        header = f.readline().upper()
+        print(header, end="")
+        print("-" * len(header))
+        entries = f.readlines()
+        if not entries:
+            print("No entries found.")
+        else:
+            for entry in entries:
+                print(entry, end="")
+            print("\n")
 
 
 def lookup_entry(filename, entry_id="", header=0):
@@ -353,7 +365,8 @@ def add_movie_listing():
         movie_name = input("Enter movie name: ")
         if movie_name:
             break
-        print(color_error_message("Invalid input: movie listing must have movie name."))
+        print(color_error_message(
+            "Invalid input: movie listing must have movie name."))
 
     release_date = validate_date(
         "Enter release date (in the format DD-MM-YYYY): ")
@@ -363,9 +376,11 @@ def add_movie_listing():
             "Enter running time (as the total number of minutes): ")
         if 0 < running_time < 500:
             break
-        print(color_error_message("Invalid input: running time should be greater than 0 and lesser than 500."))
+        print(color_error_message(
+            "Invalid input: running time should be greater than 0 and lesser than 500."))
 
-    genre = [genre.strip() for genre in input("Enter genres (as a comma-delimited list): ").split(",")]
+    genre = [genre.strip() for genre in input(
+        "Enter genres (as a comma-delimited list): ").split(",")]
 
     classification_options = ["U", "P12", "13", "16", "18+", "18SG", "18SX"]
     for index, field in enumerate(classification_options, start=1):
@@ -395,8 +410,8 @@ def add_movie_listing():
     eligibility_for_discount = validate_yes_no(
         "Select eligibility for discount (Y/N): ")
 
-    movie_listing = [movie_id, movie_name, release_date, running_time, genre,
-                     classification, spoken_language, subtitle_language, directors, casts, description, eligibility_for_discount]
+    movie_listing = [movie_id, movie_name, release_date, running_time, genre, classification,
+                     spoken_language, subtitle_language, directors, casts, description, eligibility_for_discount]
     add_entry("Cinema/Database/movie_listings.txt", movie_listing)
     notification = f'Movie listing for {movie_id}: "{movie_name}" created.'
     print("-" * len(notification))
@@ -423,13 +438,18 @@ def update_movie_listing():
     movie_listing = lookup_entry(
         "Cinema/Database/movie_listings.txt", entry_id=movie_id)
     if not movie_listing:
-        print("Invalid input: this movie ID does not exist.")
-        return
+        print(color_error_message("Invalid input: this movie ID does not exist."))
+        tryagain = validate_yes_no("Try again [Y/N]: ") == "Y"
+        if tryagain:
+            clear_terminal()
+            update_movie_listing()
+        else:
+            main_cinema_manager()
 
     details = lookup_entry(
         "Cinema/Database/movie_listings.txt", header=1)
-    for index, field in enumerate(details[1: 12], start=1):
-        print(f'[{index}] {field}', end="   ")
+    for index, field in enumerate(details[1:], start=1):
+        print(f'[{index}] {field}')
 
     detail_selection = validate_int("Select detail (enter number 1-10): ")
 
@@ -439,7 +459,8 @@ def update_movie_listing():
                 update_details = input("Enter update movie name: ")
                 if update_details:
                     break
-                print(color_error_message("Invalid input: movie listing must have movie name."))
+                print(color_error_message(
+                    "Invalid input: movie listing must have movie name."))
         case 2:
             update_details = validate_date(
                 "Enter updated release date (in the format DD-MM-YYYY): ")
@@ -448,8 +469,8 @@ def update_movie_listing():
                 update_details = validate_int("Enter updated running time: ")
                 if 0 < update_details < 500:
                     break
-                print(
-                    "Invalid input: running time should be greater than 0 and lesser than 500.")
+                print(color_error_message(
+                    "Invalid input: running time should be greater than 0 and lesser than 500."))
         case 4:
             update_details = [genre.strip() for genre in input(
                 "Enter updated genres (enter comma-delimited list): ").split(",")]
@@ -457,15 +478,16 @@ def update_movie_listing():
             classification_options = [
                 "U", "P12", "13", "16", "18+", "18SG", "18SX"]
             for index, field in enumerate(classification_options, start=1):
-                print(f'[{index}] {field}')
-            print("\n")
+                print(f'[{index}] {field}', end="   ")
+            print()
             while True:
                 classification_selection = validate_int(
                     "Select classification (enter number 1-7): ")
                 if (1 <= classification_selection <= 7):
                     update_details = classification_options[classification_selection - 1]
                     break
-                print("Invalid option: please enter a number 1-7.")
+                print(color_error_message(
+                    "Invalid option: please enter a number 1-7."))
         case 6:
             update_details = input(
                 "Enter updated spoken language (full form): ")
@@ -484,13 +506,15 @@ def update_movie_listing():
             update_details = validate_yes_no(
                 "Select updated eligibility for discount (Y/N): ")
         case _:
-            print("Invalid option")
+            print(color_error_message("Invalid option."))
             detail_selection = validate_int(
                 "Select detail (enter number 1-10): ")
 
     update_entry("Cinema/Database/movie_listings.txt",
                  movie_id, detail_selection, update_details)
-    print(f'Listing for {movie_id} updated.')
+    notification = f'Listing for {movie_id} updated.'
+    print("-" * len(notification))
+    print(color_completion_message(notification))
     print("\n")
     another = validate_yes_no("Update another movie listing [Y/N]: ") == "Y"
     if another:
@@ -513,10 +537,17 @@ def remove_movie_listing():
     movie_listing = lookup_entry(
         "Cinema/Database/movie_listings.txt", entry_id=movie_id)
     if not movie_listing:
-        print("Invalid input: this movie ID does not exist.")
-        return
+        print(color_error_message("Invalid input: this movie ID does not exist."))
+        tryagain = validate_yes_no("Try again [Y/N]: ") == "Y"
+        if tryagain:
+            clear_terminal()
+            remove_movie_listing()
+        else:
+            main_cinema_manager()
     remove_entry("Cinema/Database/movie_listings.txt", movie_id)
-    print(f'Listing for {movie_id} removed.')
+    notification = f'Listing for {movie_id} removed.'
+    print("-" * len(notification))
+    print(color_completion_message(notification))
     print("\n")
     another = validate_yes_no("Remove another movie listing [Y/N]: ") == "Y"
     if another:
@@ -577,15 +608,25 @@ def add_showtime():
     movie_listing = lookup_entry(
         "Cinema/Database/movie_listings.txt", entry_id=movie_id)
     if not movie_listing:
-        print("Invalid input: this movie ID does not exist.")
-        return
+        print(color_error_message("Invalid input: this movie ID does not exist."))
+        tryagain = validate_yes_no("Try again [Y/N]: ") == "Y"
+        if tryagain:
+            clear_terminal()
+            add_showtime()
+        else:
+            main_cinema_manager()
 
     auditorium_id = input("Enter auditorium ID: ").upper().strip()
     auditorium_info = lookup_entry(
         "Cinema/Database/auditorium_info.txt", entry_id=auditorium_id)
     if not auditorium_info:
         print("Invalid input: this auditorium ID does not exist.")
-        return
+        tryagain = validate_yes_no("Try again [Y/N]: ") == "Y"
+        if tryagain:
+            clear_terminal()
+            add_showtime()
+        else:
+            main_cinema_manager()
 
     normal_price = round(float(auditorium_info[5]), 2)
     date = validate_date("Enter date (enter in the format DD-MM-YYYY): ")
@@ -599,14 +640,23 @@ def add_showtime():
         discount_policy = lookup_entry(
             "Cinema/Database/discount_policies.txt", entry_id=discount_id)
         if not discount_policy:
-            print("Invalid input: this discount ID does not exist.")
-            return
+            print(color_error_message(
+                "Invalid input: this discount ID does not exist."))
+            tryagain = validate_yes_no("Try again [Y/N]: ") == "Y"
+            if tryagain:
+                clear_terminal()
+                add_showtime()
+            else:
+                main_cinema_manager()
+
         discounted_price = calculate_discount(discount_id, normal_price)
 
     showtime = [showtime_id, movie_id,
                 auditorium_id, date, start_time, end_time, f'{normal_price:.2f}', f'{discounted_price:.2f}' if discounted_price is not None else ""]
     add_entry("Cinema/Database/movie_showtimes.txt", showtime)
-    print(f'Showtime {showtime_id} for {movie_id} created.')
+    notification = f'Showtime {showtime_id} for {movie_id} created.'
+    print("-" * len(notification))
+    print(color_completion_message(notification))
     print("\n")
     another = validate_yes_no("Add another movie showtime [Y/N]: ") == "Y"
     if another:
@@ -630,7 +680,12 @@ def update_showtime():
         "Cinema/Database/movie_showtimes.txt", entry_id=showtime_id)
     if not movie_showtime:
         print("Invalid input: this showtime ID does not exist.")
-        return
+        tryagain = validate_yes_no("Try again [Y/N]: ") == "Y"
+        if tryagain:
+            clear_terminal()
+            update_showtime()
+        else:
+            main_cinema_manager()
 
     details = lookup_entry(
         "Cinema/Database/movie_showtimes.txt", header=1)
@@ -646,7 +701,12 @@ def update_showtime():
                 "Cinema/Database/movie_listings.txt", entry_id=update_details)
             if not movie_listing:
                 print("Invalid input: this movie ID does not exist.")
-                return
+                tryagain = validate_yes_no("Try again [Y/N]: ") == "Y"
+                if tryagain:
+                    clear_terminal()
+                    update_showtime()
+                else:
+                    main_cinema_manager()
         case 2:
             update_details = input(
                 "Enter updated auditorium ID: ").upper().strip()
@@ -654,7 +714,12 @@ def update_showtime():
                 "Cinema/Database/auditorium_info.txt", entry_id=update_details)
             if not auditorium_info:
                 print("Invalid input: this auditorium ID does not exist.")
-                return
+                tryagain = validate_yes_no("Try again [Y/N]: ") == "Y"
+                if tryagain:
+                    clear_terminal()
+                    update_showtime()
+                else:
+                    main_cinema_manager()
         case 3:
             update_details = validate_date(
                 "Enter updated date (enter in the format DD-MM-YYYY): ")
@@ -671,7 +736,9 @@ def update_showtime():
 
     update_entry("Cinema/Database/movie_showtimes.txt",
                  showtime_id, detail_selection, update_details)
-    print(f'Listing for {showtime_id} updated.')
+    notification = f'Listing for {showtime_id} updated.'
+    print("-" * len(notification))
+    print(color_completion_message(notification))
     print("\n")
     another = validate_yes_no("Update another movie showtime [Y/N]: ") == "Y"
     if another:
@@ -694,10 +761,17 @@ def remove_showtime():
     movie_showtime = lookup_entry(
         "Cinema/Database/movie_showtimes.txt", entry_id=showtime_id)
     if not movie_showtime:
-        print("Invalid input: this showtime ID does not exist.")
-        return
+        print(color_error_message("Invalid input: this showtime ID does not exist."))
+        tryagain = validate_yes_no("Try again [Y/N]: ") == "Y"
+        if tryagain:
+            clear_terminal()
+            remove_showtime()
+        else:
+            main_cinema_manager()
     remove_entry("Cinema/Database/movie_showtimes.txt", showtime_id)
-    print(f'Listing for {showtime_id} removed.')
+    notification = f'Listing for {showtime_id} removed.'
+    print("-" * len(notification))
+    print(color_completion_message(notification))
     print("\n")
     another = validate_yes_no("Remove another movie showtime [Y/N]: ") == "Y"
     if another:
@@ -736,11 +810,13 @@ def add_discount():
         discount_name = input("Enter discount name: ")
         if discount_name:
             break
-        print("Invalid input: discount policy must have discount name.")
+        print(color_error_message(
+            "Invalid input: discount policy must have discount name."))
 
     discount_type_options = ["fixed", "percentage"]
     for index, field in enumerate(discount_type_options[0: 2], start=1):
-        print(f'[{index}] {field}')
+        print(f'[{index}] {field}', end="   ")
+    print()
     discount_type_selection = validate_int(
         "Select discount type (enter number 1-2): ")
     match discount_type_selection:
@@ -755,7 +831,7 @@ def add_discount():
             discount_rate = validate_float(
                 "Enter discount rate (enter as a 2 decimal float): ")
         case _:
-            print("Invalid option.")
+            print(color_error_message("Invalid option."))
             discount_type_selection = validate_int(
                 "Select discount type (enter number 1-2): ")
     discount_policies = input("Enter discount policies: ")
@@ -763,7 +839,9 @@ def add_discount():
     discount_policy = [discount_id, discount_name, discount_type,
                        f'{discount_amount:.2f}' if discount_amount is not None else "", f'{discount_rate:.2f}' if discount_rate is not None else "", discount_policies]
     add_entry("Cinema/Database/discount_policies.txt", discount_policy)
-    print(f'Discount {discount_id} created.')
+    notification = f'Discount {discount_id} created.'
+    print("-" * len(notification))
+    print(color_completion_message(notification))
     print("\n")
     another = validate_yes_no("Add another discount policy [Y/N]: ") == "Y"
     if another:
@@ -786,8 +864,13 @@ def update_discount():
     discount_policy = lookup_entry(
         "Cinema/Database/discount_policies.txt", entry_id=discount_id)
     if not discount_policy:
-        print("Invalid input: this discount ID does not exist.")
-        return
+        print(color_error_message("Invalid input: this discount ID does not exist."))
+        tryagain = validate_yes_no("Try again [Y/N]: ") == "Y"
+        if tryagain:
+            clear_terminal()
+            update_discount()
+        else:
+            main_cinema_manager()
 
     details = lookup_entry(
         "Cinema/Database/discount_policies.txt", header=1)
@@ -802,36 +885,53 @@ def update_discount():
                 discount_name = input("Enter discount name: ")
                 if discount_name:
                     break
-            print("Invalid input: discount policy must have discount name.")
+                print(color_error_message(
+                    "Invalid input: discount policy must have discount name."))
         case 2:
-            discount_type_options = ["fixed", "percentage"]
-            for index, field in enumerate(discount_type_options[0: 2], start=1):
-                print(f'[{index}] {field}')
-
-            discount_type_selection = validate_int(
-                "Select updated discount type (enter number 1-2): ")
-
             update_details = []
-            match discount_type_selection:
-                case 1:
-                    update_details[0] = discount_type_options[0]
-                    update_details[1] = validate_float(
-                        "Enter updated discount amount (enter as a 2 decimal float): ")
-                    update_details[2] = None
-                case 2:
-                    update_details[0] = discount_type_options[1]
-                    update_details[1] = None
-                    update_details[2] = validate_float(
-                        "Enter updated discount rate (enter as a 2 decimal float): ")
-                case _:
-                    print("Invalid option.")
-                    discount_type_selection = validate_int(
-                        "Select discount type (enter number 1-2): ")
+            if discount_policy[2] == "fixed":
+                discount_type = "percentage"
+                update_details[0] = discount_type
+                update_details[1] = validate_float(
+                    "Enter updated discount amount (enter as a 2 decimal float): ")
+                update_details[2] = None
+            elif discount_policy[2] == "percentage":
+                discount_type = "fixed"
+                update_details[0] = discount_type
+                update_details[1] = None
+                update_details[2] = validate_float(
+                    "Enter updated discount rate (enter as a 2 decimal float): ")
         case 3:
+            if discount_policy[2] != "fixed":
+                print(color_error_message(
+                    "Invalid selection: discount amount cannot be edited for percentage discounts."))
+                tryagain = validate_yes_no("Try again [Y/N]: ") == "Y"
+                if tryagain:
+                    clear_terminal()
+                    update_discount()
+                else:
+                    main_cinema_manager()
+            else:
+                update_details = validate_float(
+                    "Enter updated discount amount (enter as a 2 decimal float): ")
+        case 4:
+            if discount_policy[2] != "percentage":
+                print(color_error_message(
+                    "Invalid selection: discount rate cannot be edited for fixed discounts."))
+                tryagain = validate_yes_no("Try again [Y/N]: ") == "Y"
+                if tryagain:
+                    clear_terminal()
+                    update_discount()
+                else:
+                    main_cinema_manager()
+            else:
+                update_details = validate_float(
+                    "Enter updated discount rate (enter as a 2 decimal float): ")
+        case 5:
             update_details = input(
                 "Enter updated discount policies: ")
         case _:
-            print("Invalid option.")
+            print(color_error_message("Invalid option."))
             detail_selection = validate_int(
                 "Select detail (enter number 1-5): ")
 
@@ -845,7 +945,9 @@ def update_discount():
     else:
         update_entry("Cinema/Database/discount_policies.txt",
                      discount_id, detail_selection, update_details)
-    print(f'Listing for {discount_id} updated.')
+    notification = f'Listing for {discount_id} updated.'
+    print("-" * len(notification))
+    print(color_completion_message(notification))
     print("\n")
     another = validate_yes_no("Update another discount policy [Y/N]: ") == "Y"
     if another:
@@ -868,10 +970,17 @@ def remove_discount():
     discount_policy = lookup_entry(
         "Cinema/Database/discount_policies.txt", entry_id=discount_id)
     if not discount_policy:
-        print("Invalid input: this discount ID does not exist.")
-        return
+        print(color_error_message("Invalid input: this discount ID does not exist."))
+        tryagain = validate_yes_no("Try again [Y/N]: ") == "Y"
+        if tryagain:
+            clear_terminal()
+            remove_movie_listing()
+        else:
+            main_cinema_manager()
     remove_entry("Cinema/Database/discount_policies.txt", discount_id)
-    print(f'Listing for {discount_id} removed.')
+    notification = f'Listing for {discount_id} removed.'
+    print("-" * len(notification))
+    print(color_completion_message(notification))
     print("\n")
     another = validate_yes_no("Remove another discount policy [Y/N]: ") == "Y"
     if another:
@@ -946,18 +1055,12 @@ def view_revenue_summary():
     with open("Cinema/Database/movie_bookings.txt", "r") as f:
         next(f)
         for line in f:
-            if not line:
-                print("Invalid input: no booking records exist.")
-                return
             booking = [i.strip() for i in line.split(",")]
             showtime_id = booking[1]
             tickets = [int(i.strip()) for i in booking[4].split("|")]
 
             movie_showtime = lookup_entry(
                 "Cinema/Database/movie_showtimes.txt", entry_id=showtime_id)
-            if not movie_showtime:
-                print("Error: showtime not found.")
-                return
             normal_total_revenue += round((tickets[0]
                                           * float(movie_showtime[6])), 2)
             discounted_total_revenue += round((
@@ -1064,17 +1167,10 @@ def main():
 
 
 if __name__ == "__main__":
-    # This code will only run when the script is executed directly
+    # This code will only run when the script is executed directly (ie. will not run when imported)
     clear_terminal()
-    message = "STARTING PROGRAM"
-    dots = 3
-    for char in message:
+    starting_message = "STARTING PROGRAM..."
+    for char in starting_message:
         print(char, end="", flush=True)
         time.sleep(0.1)
-
-    for _ in range(2):
-        for i in range(dots + 1):
-            sys.stdout.write("\r" + message + "." * i + " " * (dots - i))
-            sys.stdout.flush()
-            time.sleep(0.5)
     main()

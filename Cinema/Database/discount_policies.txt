@@ -1,3 +1,1 @@
 discount_id, discount_name, discount_type, discount_amount, discount_rate, discount_policies
-D01, "Tuesday Specials", percentage, None, 0.2, "only before 12 noon"
-
