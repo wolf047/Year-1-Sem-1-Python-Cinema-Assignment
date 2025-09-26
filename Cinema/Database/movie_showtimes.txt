@@ -1,1 +1,2 @@
 showtime_id, movie_id, auditorium_id, date, start_time, end_time, normal_price, discounted_price
+ST00002, M002, AUD01, 20-12-2025, 1245, 1345, 24.00, 

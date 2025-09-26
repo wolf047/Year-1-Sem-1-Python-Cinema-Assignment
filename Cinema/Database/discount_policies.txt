@@ -1,1 +1,2 @@
 discount_id, discount_name, discount_type, discount_amount, discount_rate, discount_policies
+D01, tuesday, Fixed, 23, 0, somethingseomthing
