@@ -201,6 +201,7 @@ if __name__ == "__main__":
 
         choice = input("Enter choice (1-5): ")
 
+        choice = input("Choose an option: ").strip()
         if choice == "1":
             movies = load_movies()
             display_movies(movies)

@@ -1,0 +1,163 @@
+1 SYNTAX FOR MESSAGES
+
+    1.1 ERROR MESSAGES
+
+        1.1.1 ValueError:
+
+            Invalid input: please enter either 'Y' for yes or 'N' for no.
+
+            Invalid input: please enter an integer.
+
+            Invalid input: please enter a float to 2 decimal places (eg. 0.00).
+
+            Invalid input: please enter a date in the format DD-MM-YYYY (eg. 31-12-2000 for 31st of January 2000).
+
+            Invalid input: please enter a time in the 24-hour format HHMM (eg. 2359 for 11.59PM).
+
+
+        1.1.2 Option does not exist:
+
+            Invalid option: please enter a number {x}-{y}.
+            - eg. Invalid option: please enter a number 1-8.
+
+
+        1.1.3 Entry not found:
+
+            Invalid ID: record for {entry_id} not found.
+            - eg. Invalid ID: record for M0001 not found.
+
+
+    2.1 SUCCESSFUL ADDITIONS / UPDATES / REMOVALS
+
+        2.1.1 Entry additions:
+
+            {record_type} for {entry_id}: "{entry_name}" created successfully.
+            - eg. Movie listing for M0001: "The Conjuring" created successfully.
+            
+        2.1.2 Entry updates:
+
+            {record_type} for {entry_id}: "{entry_name}" updated successfully.
+
+        2.1.3 Entry removals:
+
+            {record_type} for {entry_id}: "{entry_name}" removed successfully.
+
+
+
+
+2 LAYOUT / NAVIGATION PROCESS
+
+    2.1 RULES FOR MENU/ACTIONS
+
+        2.1.1 Menus
+
+            2.1.1.1 Layout template
+        
+                ==== {ROLE} {MENU} ====
+                
+                Available actions:
+                -----------------------
+                [1] Action_1
+                [2] Action_2
+                [3] Action_3
+                [4] Action_4
+                [5] Action_5
+                [6] Action_6
+                -----------------------
+
+                Select an action (enter number 1-6): (THERE IS A SPACE HERE AFTER COLON)
+
+            2.1.1.2 Rules
+
+                The number of dashes should above and below action list are the same.
+
+                The length of the dash line should be the same as the length of 
+                ==== {ROLE} {MENU} ====
+
+        2.1.2 After selecting actions
+
+            Ask "Do you want to {action}? [Y/N]" to confirm that user wants to select that action option. If yes, proceed with function, else if no, return to role main menu. 
+
+        2.1.3 After carrying out action
+    
+            For adding, updating, and removing actions, ask "Do you want to {action_verb another action_noun}? [Y/N]", eg. "Do you want to add another movie listing? [Y/N]". If yes, proceed with function again, else if no, return to role main menu.
+
+            For other actions like viewing, straight away return to role main menu. 
+
+        2.1.4 Viewing entries
+
+            For all actions that include viewing entries along with header, header will be printed in all uppercase. Other entries follow the alphabet case of original data.
+
+
+    2.2 MENUS
+    
+        2.2.1 Main menu:
+
+            ==== MAIN MENU ====
+
+            Available roles:
+            -------------------
+            [1] Ticketing Clerk
+            [2] Cinema Manager
+            [3] Technician
+            [4] Customer
+            -------------------
+
+            Select a role (enter number 1-4): 
+
+
+        2.2.2 Role menus - so everyone know what are the available actions in other roles
+
+            2.2.2.1 Ticketing Clerk menu
+
+                @Sargun
+
+
+
+            2.2.2.1 Cinema Manager menu
+
+                ==== CINEMA MANAGER MENU ====
+
+                Available actions:
+                -----------------------------
+                [1] View movie listings
+                [2] Add movie listing
+                [3] update movie listing
+                [4] Remove movie listing
+                [5] View movie showtimes
+                [6] Add movie showtime
+                [7] Update movie showtime
+                [8] Remove movie showtime
+                [9] View discount policies
+                [10] Add discount policy
+                [11] Update discount policy
+                [12] Remove discount policy
+                [13] View booking reports
+                [14] View revenue summary
+                [15] Exit cinema manager role
+                -----------------------------
+
+                Select an action (enter number 1-15): 
+
+
+            2.2.2.3 Technician menu
+
+                @Ian
+
+
+            2.2.2.4 Customer menu
+
+                @Shawn
+    
+        
+3 VALIDATION
+
+    When inputting an ID (such as to select which entry to update, or when entering ID of another thing when adding an entry, eg. adding auditorium_id when adding movie_showtime), always do "entry_id.upper().strip()" to ensure that entry_id is in all uppercase and that there is no whitespace. 
+
+    When inputting an ID, ensure that the record to be updated (ie. inputting an ID to indicate which record to update) or referenced (ie. inputting an ID as part of the record, eg. inputting auditorium_id in movie_showtime) is an existing record, by:
+        Calling {something} = lookup_entry. 
+        Then, if entry does not exist, print error message. Code: "if not {something}: print(Invalid ID: record for {entry_id} not found.)". [as according to error message for Entry Not Found]. Then "return" to end function, then ask "Do you want to {action_verb another action_noun}? [Y/N]" for user to retry. [same as 2.1.3]
+        Otherwise, if entry exists, proceed with function.
+
+    For certain items in an entry, where the items must contain a value (such as movie name for movie listings), use while True loop to make sure that the item entered is not empty (ie, not "").
+
