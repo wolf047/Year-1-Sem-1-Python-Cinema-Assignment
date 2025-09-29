@@ -1,4 +1,4 @@
-def load_movies(filename=r"Cinema\Database\movie_listing.txt"):
+def load_movies(filename=r"Cinema/Database/movie_listings.txt"):
     movies = []
     try:
         with open(filename, "r", encoding="utf-8") as f:
@@ -191,6 +191,17 @@ def mark_resolved():
     else:
         print("⚠️ No record found for that auditorium/equipment. Nothing to resolve.")
 
+def reset_all_equipment():
+    # Auditorium and equipment setup
+    auditoriums = [f"Auditorium {i}" for i in range(1, 9)]
+    equipment_list = ["Projector", "Sound", "Air Conditioner"]
+
+    with open("issues.txt", "w", encoding="utf-8") as f:
+        for auditorium in auditoriums:
+            for equipment in equipment_list:
+                f.write(f"{auditorium} | {equipment} | READY\n")
+
+    print("🔄 All equipment has been reset to READY.")
 
 # ================== MAIN MENU ==================
 def main_technician():
@@ -200,11 +211,10 @@ def main_technician():
         print("2. Report technical issue")
         print("3. View equipment status for an auditorium")
         print("4. Mark equipment issue as resolved")
-        print("5. Exit")
+        print("5. Reset All Equipment to Ready ")
+        print("6. Exit")
 
-        choice = input("Enter choice (1-5): ")
-
-        choice = input("Choose an option: ").strip()
+        choice = input("Enter choice (1-6): ")
         if choice == "1":
             movies = load_movies()
             display_movies(movies)
@@ -215,6 +225,8 @@ def main_technician():
         elif choice == "4":
             mark_resolved()
         elif choice == "5":
+            reset_all_equipment()
+        elif choice == "6":
             print("👋 Goodbye!")
             break
         else:
