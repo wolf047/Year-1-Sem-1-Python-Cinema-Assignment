@@ -1,107 +1,217 @@
-# TODO: 
-# put your data into a txt file, only code here in py file. Use "with open(...) as f:..." to read, write, append to txt file. For screenings, use movie_showtimes.txt
-# line 43, line 57, line 81, line 104
-# also make sure to keep spacing and capitalisation consistent
-screenings = [
-    {"Movie": "Movie 1", "Time": "30-08-2025 20:00", "Auditorium": "hall 1"},
-     {"Movie": "Movie 2", "Time": "30-08-2025 21:00", "Auditorium": "hall 2"},
-]
-
-equipment_status = {"Hall 1": {"Projector": "Ready", "Sound": "Ready", "Air Conditioner": "Ready"},
-                    "Hall 2": {"Projector": "Ready", "Sound": "Ready", "Air Conditioner": "Ready"}
-}
-
-technical_issues = []
-
-def view_schedules():
-    print("n--- Upcoming Movie Screening Schedule ---")
-    for s in screenings:
-        print(f"Movie: {s['Movie']},Time: {s['Time']}, Auditorium: {s['Auditorium']}")
-    
-    print("------------------------------------------\n")
-
-def report_issue():
+def load_movies(filename=r"Cinema\Database\movie_listing.txt"):
+    movies = []
     try:
-        hall = input('Enter Auditorium (Hall 1/Hall 2/Hall 3)')
-        if hall not in equipment_status[hall]:
-            raise ValueError("Invalid Equipment Type! ")
-        
-        issue = input("Enter Issue (Projector/Sound/Air Conditioner): ")
-        if issue not in equipment_status[hall]:
-            raise ValueError("Invalid equipment Type!")
-        
-        description = input("Describe the issue: ")
-        technical_issues.append({"hall": hall, "equipment": issue, "description": description})
-        equipment_status[hall][issue] = "Under Maintanence"
-        print(f"Issue reported for {issue} in {hall}. Status set to 'Under Maintanence.\n")
-    except ValueError as e:
-        print(f"Error: {e}\n")
-    except Exception:
-        print("Unexpected Error occured while reporting issue!\n")
+        with open(filename, "r", encoding="utf-8") as f:
+            for line in f:
+                parts = [p.strip().strip('"') for p in line.split(",")]
+                # protect against malformed lines
+                if len(parts) < 11:
+                    continue
+                movie = {
+                    "movie_id": parts[0],
+                    "movie_name": parts[1],
+                    "release_date": parts[2],
+                    "running_time": parts[3],
+                    "genre": parts[4],
+                    "classification": parts[5],
+                    "spoken_language": parts[6],
+                    "subtitle_language": parts[7],
+                    "director": parts[8],
+                    "casts": parts[9],
+                    "description": parts[10]
+                }
+                movies.append(movie)
+    except FileNotFoundError:
+        print("⚠️ movie_listing.txt not found! Please put it in Cinema\\Database\\movie_listing.txt or adjust the path.")
+    return movies
 
-def comfirm_readiness():
-    # Maybe give them a list of halls to choose from? Otherwise idk what I should type, plus capitalisaton errors can occur if I type 'hall 1' instead. Suggest give numbered list of halls and have them enter a number to select the hall.
-    hall = input("Enter Auditorium to Comfirm Readiness: ")
-    if hall not in equipment_status:
-        print("invalid hall name!\n")
+
+def display_movies(movies):
+    if not movies:
+        print("⚠️ No movies available.")
         return
-    
-    print(f"\nEquipment Status for {hall}: ")
-    for eq, status in equipment_status[hall].items():
-        print(f"{eq}: {status}")
-    print() 
+
+    print("\n🎬 --- Movie Listings --- 🎬")
+    for m in movies:
+        print(f"""
+ID: {m['movie_id']}
+Name: {m['movie_name']}
+Release Date: {m['release_date']}
+Running Time: {m['running_time']} min
+Genre: {m['genre']}
+Classification: {m['classification']}
+Language: {m['spoken_language']} (Subtitles: {m['subtitle_language']})
+Director: {m['director']}
+Casts: {m['casts']}
+Description: {m['description']}
+""")
+    print("------------------------------------------------------")
 
 
-def mark_equipment():
+# ================== ISSUES (robust, deduped) ==================
+ISSUES_FILE = "issues.txt"
+AUDITORIUMS = [f"Auditorium {i}" for i in range(1, 9)]
+EQUIPMENT_LIST = ["Projector", "Sound", "Air Conditioner"]
+
+
+def load_issues(filename=ISSUES_FILE):
+    """
+    Load issues.txt into a dict keyed by (auditorium, equipment) -> status.
+    Last occurrence in file wins (but usually file will be written by save_issues,
+    so each pair appears once).
+    """
+    issues = {}
     try:
-        # Would also suggest using numbered lists for all below. Lesser chance of typo errors
-        hall = input("Enter Auditorium (Hall 1/Hall 2): ")
-        if hall not in equipment_status:
-            raise ValueError("Invalid auditorium!")
-
-        equipment = input("Enter Equipment (Projector/Sound/Air Conditioner): ")
-        if equipment not in equipment_status[hall]:
-            raise ValueError("Invalid equipment!")
-
-        new_status = input("Enter New Status (Ready/Under Maintenance/Resolved): ")
-        if new_status not in ["Ready", "Under Maintenance", "Resolved"]:
-            raise ValueError("Invalid status!")
-
-        equipment_status[hall][equipment] = new_status
-        print(f"Equipment '{equipment}' in {hall} updated to '{new_status}'.\n")
-
-    except ValueError as e:
-        print(f"Error: {e}\n")
-    except Exception:
-        print("Unexpected error occurred while updating equipment!\n")
+        with open(filename, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                # split by '|' into at most 3 parts
+                parts = [p.strip() for p in line.split("|", 2)]
+                if len(parts) < 3:
+                    continue
+                aud, equip, status = parts[0], parts[1], parts[2]
+                issues[(aud, equip)] = status
+    except FileNotFoundError:
+        # no file yet -> return empty dict
+        pass
+    return issues
 
 
-# Main Menu
-def main():
-    # How do they choose an option? Do they type "1." or "1" or "1. View Upcoming Screenings"? Suggest to clarify. 
+def save_issues(issues, filename=ISSUES_FILE):
+    """
+    Save the issues dict to file (one canonical line per pair).
+    """
+    with open(filename, "w", encoding="utf-8") as f:
+        # sort for stable ordering (optional)
+        for (aud, equip), status in sorted(issues.items()):
+            f.write(f"{aud} | {equip} | {status}\n")
+
+
+# ----- action: report new issue (set Under Maintenance) -----
+def report_issue():
+    # Auditorium selection
+    print("\nSelect Auditorium:")
+    for i, a in enumerate(AUDITORIUMS, 1):
+        print(f"{i}. {a}")
+    choice = input("Enter choice (1-8): ")
+    try:
+        auditorium = AUDITORIUMS[int(choice) - 1]
+    except (ValueError, IndexError):
+        print("⚠️ Invalid choice. Returning to menu.")
+        return
+
+    # Equipment selection
+    print("\nSelect Equipment:")
+    for i, e in enumerate(EQUIPMENT_LIST, 1):
+        print(f"{i}. {e}")
+    choice = input("Enter choice (1-3): ")
+    try:
+        equipment = EQUIPMENT_LIST[int(choice) - 1]
+    except (ValueError, IndexError):
+        print("⚠️ Invalid choice. Returning to menu.")
+        return
+
+    # Load, update, save (this prevents duplicate lines)
+    issues = load_issues()
+    issues[(auditorium, equipment)] = "Under Maintenance"
+    save_issues(issues)
+    print(f"✅ Issue reported successfully: {auditorium} - {equipment} (Under Maintenance)")
+
+
+# ----- view-only: show current equipment status for a chosen auditorium -----
+def confirm_readiness():
+    # (kept the old function name since it's option 3 in your menu)
+    print("\nSelect Auditorium to view status:")
+    for i, a in enumerate(AUDITORIUMS, 1):
+        print(f"{i}. {a}")
+    choice = input("Enter choice (1-8): ")
+    try:
+        auditorium = AUDITORIUMS[int(choice) - 1]
+    except (ValueError, IndexError):
+        print("⚠️ Invalid choice. Returning to menu.")
+        return
+
+    issues = load_issues()  # dict
+    print(f"\n📋 Current equipment status for {auditorium}:")
+    found_any = False
+    # show all equipment types with status (default "No record")
+    for equip in EQUIPMENT_LIST:
+        status = issues.get((auditorium, equip), None)
+        if status is None:
+            print(f"   {equip}: READY ")
+        else:
+            print(f"   {equip}: {status}")
+            found_any = True
+
+    if not found_any:
+        print("   (No recorded statuses yet for this auditorium.)")
+
+
+# ----- resolve: set a specific equipment to Resolved -----
+def mark_resolved():
+    print("\nSelect Auditorium:")
+    for i, a in enumerate(AUDITORIUMS, 1):
+        print(f"{i}. {a}")
+    choice = input("Enter choice (1-8): ")
+    try:
+        auditorium = AUDITORIUMS[int(choice) - 1]
+    except (ValueError, IndexError):
+        print("⚠️ Invalid choice. Returning to menu.")
+        return
+
+    print("\nSelect Equipment:")
+    for i, e in enumerate(EQUIPMENT_LIST, 1):
+        print(f"{i}. {e}")
+    choice = input("Enter choice (1-3): ")
+    try:
+        equipment = EQUIPMENT_LIST[int(choice) - 1]
+    except (ValueError, IndexError):
+        print("⚠️ Invalid choice. Returning to menu.")
+        return
+
+    issues = load_issues()
+    key = (auditorium, equipment)
+    if key in issues:
+        if issues[key] == "Under Maintenance":
+            issues[key] = "Resolved"
+            save_issues(issues)
+            print(f"✅ Issue resolved: {auditorium} - {equipment}")
+        elif issues[key] == "Resolved":
+            print(f"ℹ️ Equipment already marked Resolved: {auditorium} - {equipment}")
+        else:
+            # if it was "OK" or other status, still update if you want:
+            issues[key] = "Resolved"
+            save_issues(issues)
+            print(f"✅ Status updated to Resolved for {auditorium} - {equipment}")
+    else:
+        print("⚠️ No record found for that auditorium/equipment. Nothing to resolve.")
+
+
+# ================== MAIN MENU ==================
+if __name__ == "__main__":
     while True:
-        print("=== Technician Management Menu ===")
-        print("1. View Upcoming Screenings")
-        print("2. Report Technical Issue")
-        print("3. Confirm Equipment Readiness")
-        print("4. Mark Equipment Status")
+        print("\n===== 🎥 Cinema Technician System =====")
+        print("1. View movie listings")
+        print("2. Report technical issue")
+        print("3. View equipment status for an auditorium")
+        print("4. Mark equipment issue as resolved")
         print("5. Exit")
-        choice = input("Choose an option: ")
+
+        choice = input("Enter choice (1-5): ")
 
         if choice == "1":
-            view_schedules()
+            movies = load_movies()
+            display_movies(movies)
         elif choice == "2":
             report_issue()
         elif choice == "3":
-            comfirm_readiness()
+            confirm_readiness()   # view-only now
         elif choice == "4":
-            mark_equipment()
+            mark_resolved()
         elif choice == "5":
-            print("Exiting Technician System. Goodbye!")
+            print("👋 Goodbye!")
             break
         else:
-            print("Invalid choice. Try again!\n")
-
-# cannot use object-oriented programming. Actually, what's the purpose of this code?
-if __name__ == "__main__":
-    main()
+            print("!! Invalid Choice, Please Use 1 2 3 ... Format !!")

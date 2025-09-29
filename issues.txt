@@ -1,0 +1,8 @@
+& C:/Users/User/AppData/Local/Microsoft/WindowsApps/python3.11.exe "c:/Users/User/OneDrive/Desktop/Apu/Programming with phyton/Year-1-Sem-1-Python-Cinema-Assignment/Year-1-Sem-1-Python-Cinema-Assignment/Cinema/Code/technician.py" | 1 | Under Maintenance
+2 | Projector | Under Maintenance
+3 | fadf | OK
+Auditorium 1 | Projector | Resolved
+Auditorium 1 | Sound | Resolved
+Auditorium 8 | Air Conditioner | Resolved
+Auditorium 8 | Projector | OK
+w | w | OK
