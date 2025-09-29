@@ -117,7 +117,8 @@ def report_issue():
     issues = load_issues()
     issues[(auditorium, equipment)] = "Under Maintenance"
     save_issues(issues)
-    print(f"✅ Issue reported successfully: {auditorium} - {equipment} (Under Maintenance)")
+    print(
+        f"✅ Issue reported successfully: {auditorium} - {equipment} (Under Maintenance)")
 
 
 # ----- view-only: show current equipment status for a chosen auditorium -----
@@ -179,18 +180,20 @@ def mark_resolved():
             save_issues(issues)
             print(f"✅ Issue resolved: {auditorium} - {equipment}")
         elif issues[key] == "Resolved":
-            print(f"ℹ️ Equipment already marked Resolved: {auditorium} - {equipment}")
+            print(
+                f"ℹ️ Equipment already marked Resolved: {auditorium} - {equipment}")
         else:
             # if it was "OK" or other status, still update if you want:
             issues[key] = "Resolved"
             save_issues(issues)
-            print(f"✅ Status updated to Resolved for {auditorium} - {equipment}")
+            print(
+                f"✅ Status updated to Resolved for {auditorium} - {equipment}")
     else:
         print("⚠️ No record found for that auditorium/equipment. Nothing to resolve.")
 
 
 # ================== MAIN MENU ==================
-if __name__ == "__main__":
+def main_technician():
     while True:
         print("\n===== 🎥 Cinema Technician System =====")
         print("1. View movie listings")

@@ -37,39 +37,45 @@
 from datetime import datetime
 import time
 import os
+import technician
+
 
 RED = '\033[91m'
 GREEN = '\033[92m'
 RESET = '\033[0m'
 
+AUDITORIUMS = ["AUD01", "AUD02", "AUD03",
+               "AUD04", "AUD05", "AUD06", "AUD07", "AUD08"]
+CLASSIFICATION_OPTIONS = ["U", "P12", "13", "16", "18+", "18SG", "18SX"]
 
-def color_error_message(prompt):
+
+def color_error_message(message):
     """
     Wraps a string with ANSI escape codes to display it in red.
 
     Args:
-        prompt (str): The error message to be colorized.
+        message (str): The error message to be colorized.
 
     Returns:
         str: The error message wrapped with red color and reset codes.
     """
 
-    colored_prompt = RED + prompt + RESET
-    return colored_prompt
+    colored_message = RED + message + RESET
+    return colored_message
 
 
-def color_completion_message(prompt):
+def color_completion_message(message):
     """
     Wraps a string with ANSI escape codes to display it in green.
 
     Args:
-        prompt (str): The completion message to be colorized.
+        message (str): The completion message to be colorized.
 
     Returns:
         str: The completion message wrapped with green color and reset codes.
     """
-    colored_prompt = GREEN + prompt + RESET
-    return colored_prompt
+    colored_message = GREEN + message + RESET
+    return colored_message
 
 
 def clear_terminal():
@@ -79,11 +85,11 @@ def clear_terminal():
         None
     """
     # For Windows
-    if os.name == 'nt':
-        _ = os.system('cls')
+    if os.name == "nt":
+        _ = os.system("cls")
     # For macOS and Linux
     else:
-        _ = os.system('clear')
+        _ = os.system("clear")
 
 
 def validate_yes_no(prompt):
@@ -178,7 +184,7 @@ def validate_time(prompt):
                 "Invalid input: please enter a time in the format HHMM (e.g., 2359)."))
 
 
-def lint_entry(value):
+def lint_item(value):
     """
     Formats a list or string to be entered in text file.
 
@@ -214,7 +220,7 @@ def add_entry(filename, entry_detail_list):
             f.write("\n")
         formatted_entry = []
         for item in entry_detail_list:
-            formatted_entry.append(lint_entry(item))
+            formatted_entry.append(lint_item(item))
         f.write(", ".join(formatted_entry) + "\n")
 
 
@@ -237,7 +243,7 @@ def update_entry(filename, entry_id, detail_index, entry_detail_item):
         for entry in entries:
             entry = [i.strip() for i in entry.split(",")]
             if entry[0] == entry_id:
-                entry[detail_index] = lint_entry(entry_detail_item)
+                entry[detail_index] = lint_item(entry_detail_item)
             updated_entries.append(", ".join(entry) + "\n")
     with open(filename, "w") as f:
         f.writelines(updated_entries)
@@ -338,7 +344,7 @@ def id_counter(item_counted):
 
 def view_movie_listing():
     """
-    Displays all movie listings in a formatted table.
+    Displays all movie listings.
 
     Returns:
         None
@@ -381,16 +387,14 @@ def add_movie_listing():
 
     genre = [genre.strip() for genre in input(
         "Enter genres (lists should be comma-separated): ").lower().split(",")]
-
-    classification_options = ["U", "P12", "13", "16", "18+", "18SG", "18SX"]
-    for index, field in enumerate(classification_options, start=1):
+    for index, field in enumerate(CLASSIFICATION_OPTIONS, start=1):
         print(f'[{index}] {field}', end="   ")
     print()
     while True:
         classification_selection = validate_int(
             "Select classification (enter number 1-7): ")
         if (1 <= classification_selection <= 7):
-            classification = classification_options[classification_selection - 1]
+            classification = CLASSIFICATION_OPTIONS[classification_selection - 1]
             break
         print(color_error_message("Invalid option: please enter a number 1-7."))
 
@@ -476,16 +480,14 @@ def update_movie_listing():
             update_details = [genre.strip() for genre in input(
                 "Enter updated genres (lists should be comma-separated): ").lower().split(",")]
         case 5:
-            classification_options = [
-                "U", "P12", "13", "16", "18+", "18SG", "18SX"]
-            for index, field in enumerate(classification_options, start=1):
+            for index, field in enumerate(CLASSIFICATION_OPTIONS, start=1):
                 print(f'[{index}] {field}', end="   ")
             print()
             while True:
                 classification_selection = validate_int(
                     "Select classification (enter number 1-7): ")
                 if (1 <= classification_selection <= 7):
-                    update_details = classification_options[classification_selection - 1]
+                    update_details = CLASSIFICATION_OPTIONS[classification_selection - 1]
                     break
                 print(color_error_message(
                     "Invalid option: please enter a number 1-7."))
@@ -998,6 +1000,43 @@ def remove_discount():
         main_cinema_manager()
 
 
+def update_price():
+    """
+    Updates the default normal price field in an existing auditorium info entry.
+
+    Prompts the user for an auditorium ID, validates its existence, and updates price field.
+
+    Returns:
+        None
+    """
+    auditorium_id = input(
+        "Enter ID of auditorium where price is to be edited: ").upper().strip()
+    auditorium_info = lookup_entry(
+        "Cinema/Database/auditorium_info.txt", entry_id=auditorium_id)
+    if not auditorium_info:
+        print(color_error_message(
+            "Invalid input: this auditorium ID does not exist."))
+        tryagain = validate_yes_no("Try again [Y/N]: ") == "Y"
+        if tryagain:
+            clear_terminal()
+            update_price()
+        else:
+            main_cinema_manager()
+    update_details = validate_float("Enter updated price (2 decimal float): ")
+    update_entry("Cinema/Database/auditorium_info.txt",
+                 auditorium_id, 5, update_details)
+    notification = f'SUCCESS: Price for auditorium {auditorium_id} updated.'
+    print("-" * len(notification))
+    print(color_completion_message(notification))
+    print("\n")
+    another = validate_yes_no("Update another price? [Y/N]: ") == "Y"
+    if another:
+        clear_terminal()
+        update_price()
+    else:
+        main_cinema_manager()
+
+
 def view_booking_reports():
     """
     Displays booking entries, optionally filtered by movie ID.
@@ -1007,9 +1046,10 @@ def view_booking_reports():
     """
     specific_movie = validate_yes_no(
         "View the report for a specific movie? [Y/N] ") == "Y"
+    clear_terminal()
     entries = []
     with open("Cinema/Database/movie_bookings.txt", "r") as f:
-        header = f.readline().strip().upper().split(",")
+        header = f.readline().upper()
 
     if specific_movie:
         movie_id = input("Enter movie ID: ").upper().strip()
@@ -1022,24 +1062,21 @@ def view_booking_reports():
                             entry = [i.strip()
                                      for i in booking_line.split(",")]
                             if entry[1] == showtime_entry[0]:
-                                entries.append(entry)
+                                entries.append(", ".join(entry) + "\n")
 
     else:
         with open("Cinema/Database/movie_bookings.txt", "r") as f:
             next(f)
-            entries = [[i.strip() for i in line.strip().split(",")]
-                       for line in f.readlines()]
+            entries = f.readlines()
 
-    all_rows = [header] + entries
-    col_widths = [max(len(i.strip()) for i in col)
-                  for col in zip(*all_rows)]
-    print(format_row(header, col_widths))
-    print("-" * sum(col_widths) + "-" * (3 * (len(col_widths) - 1)))
+    print(header, end="")
+    print("-" * len(header))
     if not entries:
         print("No entries found.")
-        main_cinema_manager()
-    for entry in entries:
-        print(format_row(entry, col_widths))
+    else:
+        for entry in entries:
+            print(entry, end="")
+        print("\n")
 
     while True:
         done = validate_yes_no("Return to cinema manager menu? [Y/N]: ")
@@ -1072,8 +1109,10 @@ def view_revenue_summary():
                 tickets[1] * float(movie_showtime[7])), 2)
 
     total_revenue = normal_total_revenue + discounted_total_revenue
-    print(
-        f'Revenue from normal tickets: {normal_total_revenue:.2f}\nRevenue from discounted tickets: {discounted_total_revenue:.2f}\nTotal revenue: {total_revenue}')
+    print(f'REVENUE FROM NORMAL TICKETS: {normal_total_revenue:.2f}')
+    print(f'REVENUE FROM DISCOUNTED TICKETS: {discounted_total_revenue:.2f}')
+    print("-" * len(f'TOTAL REVENUE: {total_revenue}'))
+    print(f'TOTAL REVENUE: {total_revenue}')
     while True:
         done = validate_yes_no("Return to cinema manager menu? [Y/N]: ")
         if done == "Y":
@@ -1093,7 +1132,7 @@ def main_cinema_manager():
     clear_terminal()
     print("==== CINEMA MANAGER MENU ====\n\nAvailable actions:\n-----------------------------")
     actions = ["View movie listings", "Add movie listing", "Update movie listing", "Remove movie listing", "View showtimes", "Add showtime", "Update showtime", "Remove showtime", "View discounts",
-               "Add discount", "Update discount", "Remove discount", "View booking report", "View revenue summary", "Exit cinema manager role"]
+               "Add discount", "Update discount", "Remove discount", "Update normal price", "View booking report", "View revenue summary", "Exit cinema manager role"]
 
     for index, action in enumerate(actions, start=1):
         print(f'[{index}] {action}')
@@ -1112,9 +1151,10 @@ def main_cinema_manager():
         10: add_discount,
         11: update_discount,
         12: remove_discount,
-        13: view_booking_reports,
-        14: view_revenue_summary,
-        15: main
+        13: update_price,
+        14: view_booking_reports,
+        15: view_revenue_summary,
+        16: main
     }
 
     while True:
@@ -1151,7 +1191,7 @@ def main():
     role_functions = {
         # 1: main_ticketing_clerk,
         2: main_cinema_manager,
-        # 3: main_technician,
+        3: main_technician,
         # 4: main_customer,
     }
 
