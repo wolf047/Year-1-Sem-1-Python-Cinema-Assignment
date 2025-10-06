@@ -1,7 +1,7 @@
 
 
 # FILE PATHS (plain strings)
-BASE =  "Cinema/Database"
+BASE =  r"C:\Users\shann\Desktop\Comp-Science(AI)\Int-Python-programming\Assignment\Cinema\Database"
 MOVIE_FILE    = BASE + r"/movie_listings.txt"      # where movie rows are stored
 SHOW_FILE     = BASE + r"/movie_showtimes.txt"     # where showtime rows are stored
 CUSTOMER_FILE = BASE + r"/customers.txt"      # where customer rows are stored
@@ -415,7 +415,7 @@ def view_seat_info_for_showtime():                                       # show 
         print("Taken seats:", line)                                      # print the built line
 
 # MENU (only the 4 tasks)
-def main_customer():                                                              # main menu loop
+def main():                                                              # main menu loop
     while True:                                                          # keep showing options until user exits
         print("\n=== CUSTOMER MENU ===")                                 # a blank line then the title
         print("[1] Register / Create account")                           # option 1
@@ -441,4 +441,6 @@ def main_customer():                                                            
         else:
             print("Invalid choice. Try again.")                          # anything else -> error then loop
 
-                                                            # start the program
+
+if __name__ == "__main__":                                               # this is True when we press Run on this file
+    main()                                                               # start the program
