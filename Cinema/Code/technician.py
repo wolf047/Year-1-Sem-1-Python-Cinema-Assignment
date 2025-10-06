@@ -2,6 +2,7 @@ def load_movies(filename=r"Cinema/Database/movie_listings.txt"):
     movies = []
     try:
         with open(filename, "r", encoding="utf-8") as f:
+            next(f)
             for line in f:
                 parts = [p.strip().strip('"') for p in line.split(",")]
                 # protect against malformed lines
@@ -228,6 +229,6 @@ def main_technician():
             reset_all_equipment()
         elif choice == "6":
             print("👋 Goodbye!")
-            break
+            main()
         else:
             print("!! Invalid Choice, Please Use 1 2 3 ... Format !!")
