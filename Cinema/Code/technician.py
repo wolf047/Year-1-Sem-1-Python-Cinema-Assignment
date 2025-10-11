@@ -2,29 +2,18 @@ def load_movies(filename=r"Cinema/Database/movie_listings.txt"):
     movies = []
     try:
         with open(filename, "r", encoding="utf-8") as f:
-            for line in f:
-                parts = [p.strip().strip('"') for p in line.split(",")]
-                # protect against malformed lines
-                if len(parts) < 11:
+            lines = f.readlines()
+            for line in lines:
+                # protect against malformed lines (check for empty)
+                if not line.strip():
                     continue
                 movie = {
-                    "movie_id": parts[0],
-                    "movie_name": parts[1],
-                    "release_date": parts[2],
-                    "running_time": parts[3],
-                    "genre": parts[4],
-                    "classification": parts[5],
-                    "spoken_language": parts[6],
-                    "subtitle_language": parts[7],
-                    "director": parts[8],
-                    "casts": parts[9],
-                    "description": parts[10]
+                    "movie_data": line  # store the raw line directly
                 }
                 movies.append(movie)
     except FileNotFoundError:
         print("⚠️ movie_listing.txt not found! Please put it in Cinema\\Database\\movie_listing.txt or adjust the path.")
     return movies
-
 
 def display_movies(movies):
     if not movies:
@@ -33,18 +22,7 @@ def display_movies(movies):
 
     print("\n🎬 --- Movie Listings --- 🎬")
     for m in movies:
-        print(f"""
-ID: {m['movie_id']}
-Name: {m['movie_name']}
-Release Date: {m['release_date']}
-Running Time: {m['running_time']} min
-Genre: {m['genre']}
-Classification: {m['classification']}
-Language: {m['spoken_language']} (Subtitles: {m['subtitle_language']})
-Director: {m['director']}
-Casts: {m['casts']}
-Description: {m['description']}
-""")
+        print(m["movie_data"].rstrip())  # print raw line from file
     print("------------------------------------------------------")
 
 
@@ -231,3 +209,4 @@ def main_technician():
             break
         else:
             print("!! Invalid Choice, Please Use 1 2 3 ... Format !!")
+main_technician()

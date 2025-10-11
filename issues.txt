@@ -1,5 +1,5 @@
 Auditorium 1 | Air Conditioner | READY
-Auditorium 1 | Projector | Resolved
+Auditorium 1 | Projector | Under Maintenance
 Auditorium 1 | Sound | READY
 Auditorium 2 | Air Conditioner | READY
 Auditorium 2 | Projector | READY
