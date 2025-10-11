@@ -1,1 +1,2 @@
 customer_id, name, phone, email, password
+C0001, Sascha Neoh, 60179228873, sascha007@gmail.com, whitefang
