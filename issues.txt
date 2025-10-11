@@ -1,4 +1,9 @@
+<<<<<<< HEAD
+Auditorium 1 | Air Conditioner | READY
+Auditorium 1 | Projector | Under Maintenance
+=======
 Auditorium 1 | Projector | READY
+>>>>>>> 4d6d3dceee3a7a765e31e5665eac76e55dfe337d
 Auditorium 1 | Sound | READY
 Auditorium 1 | Air Conditioner | READY
 Auditorium 2 | Projector | READY
