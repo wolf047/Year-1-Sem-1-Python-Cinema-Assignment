@@ -1260,14 +1260,13 @@ def view_revenue_summary():
         for line in f:
             booking = [i.strip() for i in line.split(",")]
             showtime_id = booking[1]
-            tickets = [int(i.strip()) for i in booking[4].split("|")]
-
             movie_showtime = lookup_entry(
                 "Cinema/Database/movie_showtimes.txt", entry_id=showtime_id)
-            normal_total_revenue += round((tickets[0]
-                                          * float(movie_showtime[6])), 2)
-            discounted_total_revenue += round((
-                tickets[1] * float(movie_showtime[7])), 2)
+            tickets = [int(i.strip()) for i in booking[4].split("|")]
+            normal_price = float(movie_showtime[6])
+            discounted_price = float(movie_showtime[7]) if movie_showtime[7] else 0.00
+            normal_total_revenue += round((tickets[0] * normal_price), 2)
+            discounted_total_revenue += round((tickets[1] * discounted_price), 2)
 
     total_revenue = normal_total_revenue + discounted_total_revenue
     print(f'REVENUE FROM NORMAL TICKETS: {normal_total_revenue:.2f}')
