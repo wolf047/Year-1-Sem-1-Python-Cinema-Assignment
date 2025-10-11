@@ -1,5 +1,3 @@
-def testing():
-    pass
 # One-time usage: to generate seat layout, with aisle spaces added manually
 # def generate_seat_layout():
 #     rows = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
