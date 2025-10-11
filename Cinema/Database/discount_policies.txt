@@ -1,1 +1,4 @@
 discount_id, discount_name, discount_type, discount_amount, discount_rate, discount_policies
+D01, Placeholder, percentage, 0.00, 0.00, "When no discount is to be applied even though the movie is eligible for discounts."
+D02, Students/kids/seniors/OKU, percentage, 0.00, 0.10, "10% off for students, kids, senior citizens, and OKU."
+D03, Wednesdays, percentage, 0.00, 0.50, "50% off on Wednesdays."

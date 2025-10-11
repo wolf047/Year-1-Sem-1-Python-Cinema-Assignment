@@ -4,27 +4,52 @@ def load_movies(filename=r"Cinema/Database/movie_listings.txt"):
         with open(filename, "r", encoding="utf-8") as f:
             lines = f.readlines()
             for line in lines:
-                # protect against malformed lines (check for empty)
                 if not line.strip():
                     continue
                 movie = {
-                    "movie_data": line  # store the raw line directly
+                    "movie_data": line  # keep raw text
                 }
                 movies.append(movie)
     except FileNotFoundError:
         print("⚠️ movie_listing.txt not found! Please put it in Cinema\\Database\\movie_listing.txt or adjust the path.")
     return movies
 
+
 def display_movies(movies):
     if not movies:
         print("⚠️ No movies available.")
         return
 
-    print("\n🎬 --- Movie Listings --- 🎬")
-    for m in movies:
-        print(m["movie_data"].rstrip())  # print raw line from file
-    print("------------------------------------------------------")
+    print("\n🎬==============================================🎬")
+    print("                 MOVIE  LISTINGS")
+    print("==============================================")
 
+    for i, m in enumerate(movies, start=1):
+        print(f"\n🎞️  Movie #{i}")
+        print("--------------------------------------------------")
+
+        # Replace commas with newlines for easy reading
+        formatted = m["movie_data"].replace(",", "\n")
+
+        # Add simple labels for clarity
+        print(f"""
+Movie ID      : {formatted.splitlines()[0]}
+Movie Name    : {formatted.splitlines()[1]}
+Release Date  : {formatted.splitlines()[2]}
+Running Time  : {formatted.splitlines()[3]} minutes
+Genre         : {formatted.splitlines()[4]}
+Classification: {formatted.splitlines()[5]}
+Language      : {formatted.splitlines()[6]}
+Subtitles     : {formatted.splitlines()[7]}
+Director      : {formatted.splitlines()[8]}
+Casts         : {formatted.splitlines()[9]}
+Description   : {formatted.splitlines()[10]}
+""")
+
+        print("--------------------------------------------------")
+
+    print("\n✅ End of Movie List")
+    print("🎬==============================================🎬")
 
 # ================== ISSUES (robust, deduped) ==================
 ISSUES_FILE = "issues.txt"
@@ -206,7 +231,7 @@ def main_technician():
             reset_all_equipment()
         elif choice == "6":
             print("👋 Goodbye!")
-            break
+            main()
         else:
             print("!! Invalid Choice, Please Use 1 2 3 ... Format !!")
 main_technician()
