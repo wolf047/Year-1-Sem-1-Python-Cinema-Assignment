@@ -7,8 +7,8 @@ TICKET_PRICE = 15.00
 STUDENT_DISCOUNT = 0.20
 
 
-MOVIES_FILE = "movies.txt"
-BOOKINGS_FILE = "bookings.txt"
+MOVIES_FILE = "Cinema/Database/movie_listings.txt"
+BOOKINGS_FILE = "Cinema/Database/movie_bookings.txt"
 
 
 

@@ -2,24 +2,12 @@ def load_movies(filename=r"Cinema/Database/movie_listings.txt"):
     movies = []
     try:
         with open(filename, "r", encoding="utf-8") as f:
-            next(f)
-            for line in f:
-                parts = [p.strip().strip('"') for p in line.split(",")]
-                # protect against malformed lines
-                if len(parts) < 11:
+            lines = f.readlines()
+            for line in lines:
+                if not line.strip():
                     continue
                 movie = {
-                    "movie_id": parts[0],
-                    "movie_name": parts[1],
-                    "release_date": parts[2],
-                    "running_time": parts[3],
-                    "genre": parts[4],
-                    "classification": parts[5],
-                    "spoken_language": parts[6],
-                    "subtitle_language": parts[7],
-                    "director": parts[8],
-                    "casts": parts[9],
-                    "description": parts[10]
+                    "movie_data": line  # keep raw text
                 }
                 movies.append(movie)
     except FileNotFoundError:
@@ -32,22 +20,36 @@ def display_movies(movies):
         print("⚠️ No movies available.")
         return
 
-    print("\n🎬 --- Movie Listings --- 🎬")
-    for m in movies:
-        print(f"""
-ID: {m['movie_id']}
-Name: {m['movie_name']}
-Release Date: {m['release_date']}
-Running Time: {m['running_time']} min
-Genre: {m['genre']}
-Classification: {m['classification']}
-Language: {m['spoken_language']} (Subtitles: {m['subtitle_language']})
-Director: {m['director']}
-Casts: {m['casts']}
-Description: {m['description']}
-""")
-    print("------------------------------------------------------")
+    print("\n🎬==============================================🎬")
+    print("                 MOVIE  LISTINGS")
+    print("==============================================")
 
+    for i, m in enumerate(movies, start=1):
+        print(f"\n🎞️  Movie #{i}")
+        print("--------------------------------------------------")
+
+        # Replace commas with newlines for easy reading
+        formatted = m["movie_data"].replace(",", "\n")
+
+        # Add simple labels for clarity
+        print(f"""
+Movie ID      : {formatted.splitlines()[0]}
+Movie Name    : {formatted.splitlines()[1]}
+Release Date  : {formatted.splitlines()[2]}
+Running Time  : {formatted.splitlines()[3]} minutes
+Genre         : {formatted.splitlines()[4]}
+Classification: {formatted.splitlines()[5]}
+Language      : {formatted.splitlines()[6]}
+Subtitles     : {formatted.splitlines()[7]}
+Director      : {formatted.splitlines()[8]}
+Casts         : {formatted.splitlines()[9]}
+Description   : {formatted.splitlines()[10]}
+""")
+
+        print("--------------------------------------------------")
+
+    print("\n✅ End of Movie List")
+    print("🎬==============================================🎬")
 
 # ================== ISSUES (robust, deduped) ==================
 ISSUES_FILE = "issues.txt"
@@ -232,3 +234,4 @@ def main_technician():
             main()
         else:
             print("!! Invalid Choice, Please Use 1 2 3 ... Format !!")
+main_technician()

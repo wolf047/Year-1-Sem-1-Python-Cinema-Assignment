@@ -378,8 +378,8 @@ def view_movie_listing():
     """
     view_all_entries("Cinema/Database/movie_listings.txt")
     while True:
-        done = validate_yes_no("Return to cinema manager menu? [Y/N]: ")
-        if done == "Y":
+        done = input("Press ENTER to return to cinema manager menu...")
+        if done == "":
             main_cinema_manager()
             break
 
@@ -597,8 +597,8 @@ def view_showtime():
     """
     view_all_entries("Cinema/Database/movie_showtimes.txt")
     while True:
-        done = validate_yes_no("Return to cinema manager menu? [Y/N]: ")
-        if done == "Y":
+        done = input("Press ENTER to return to cinema manager menu...")
+        if done == "":
             main_cinema_manager()
             break
 
@@ -959,8 +959,8 @@ def view_discount():
     """
     view_all_entries("Cinema/Database/discount_policies.txt")
     while True:
-        done = validate_yes_no("Return to cinema manager menu? [Y/N]: ")
-        if done == "Y":
+        done = input("Press ENTER to return to cinema manager menu...")
+        if done == "":
             main_cinema_manager()
             break
 
@@ -1158,8 +1158,8 @@ def view_auditoriums():
     """
     view_all_entries("Cinema/Database/auditorium_info.txt")
     while True:
-        done = validate_yes_no("Return to cinema manager menu? [Y/N]: ")
-        if done == "Y":
+        done = input("Press ENTER to return to cinema manager menu...")
+        if done == "":
             main_cinema_manager()
             break
 
@@ -1240,8 +1240,8 @@ def view_booking_reports():
         print("\n")
 
     while True:
-        done = validate_yes_no("Return to cinema manager menu? [Y/N]: ")
-        if done == "Y":
+        done = input("Press ENTER to return to cinema manager menu...")
+        if done == "":
             main_cinema_manager()
             break
 
@@ -1274,8 +1274,8 @@ def view_revenue_summary():
     print("-" * len(f'TOTAL REVENUE: {total_revenue}'))
     print(f'TOTAL REVENUE: {total_revenue}')
     while True:
-        done = validate_yes_no("Return to cinema manager menu? [Y/N]: ")
-        if done == "Y":
+        done = input("Press ENTER to return to cinema manager menu...")
+        if done == "":
             main_cinema_manager()
             break
 
