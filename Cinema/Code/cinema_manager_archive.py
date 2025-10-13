@@ -832,7 +832,7 @@ def update_showtime():
         else:
             main_cinema_manager()
 
-    details = lookup_entry("Cinema/Database/movie_showtimes.txt")
+    details = lookup_entry("Cinema/Database/movie_showtimes.txt", header=1)
     for index, field in enumerate(details[1:5] + [details[8]], start=1):
         print(f'[{index}] {field}')
 

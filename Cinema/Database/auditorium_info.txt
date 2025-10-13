@@ -1,9 +1,9 @@
 auditorium_id, auditorium_type, auditorium_capacity, auditorium_rows, auditorium_columns, default_normal_price
-AUD01, 2D, 105, 7, 15, 24.0
-AUD02, 2D, 120, 8, 15, 24.0
-AUD03, 2D, 160, 10, 16, 24.5
-AUD04, 2D, 240, 12, 20, 24.5
-AUD05, IMAX, 200, 10, 20, 35.0
-AUD06, IMAX, 260, 13, 20, 35.0
-AUD07, 4DX, 100, 5, 20, 42.0
-AUD08, Indulge, 32, 4, 8, 85.0
+AUD01, 2D, 105, 7, 15, 24.00
+AUD02, 2D, 120, 8, 15, 24.00
+AUD03, 2D, 160, 10, 16, 24.50
+AUD04, 2D, 240, 12, 20, 24.50
+AUD05, IMAX, 200, 10, 20, 35.00
+AUD06, IMAX, 260, 13, 20, 35.00
+AUD07, 4DX, 100, 5, 20, 42.00
+AUD08, Indulge, 32, 4, 8, 85.00
