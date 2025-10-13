@@ -175,21 +175,35 @@ def book_ticket():
                     print(f"\nERROR: Seat {seat} already booked!")
                     return
 
-    # Get price
-    file = open(AUDITORIUM_FILE, 'r')
+    # Get price from showtime file
+    file = open(SHOWTIME_FILE, 'r')
     lines = file.readlines()
     file.close()
 
-    normal_price = 24.00
+    normal_price = None
+    discount_price = None
+
     for i in range(1, len(lines)):
         if lines[i].strip() == "":
             continue
         parts = lines[i].split(',')
-        if parts[0].strip() == auditorium_id:
-            normal_price = float(parts[5].strip())
+        if parts[0].strip() == showtime_id:
+            # Column 6 = normal_price, Column 7 = discounted_price
+            normal_price = float(parts[6].strip())
+            discounted_price_str = parts[7].strip()
+
+            # If discounted_price is empty or 0.00, no discount available
+            if discounted_price_str != "" and float(discounted_price_str) > 0:
+                discount_price = float(discounted_price_str)
+            else:
+                discount_price = normal_price
             break
 
-    discount_price = normal_price * 0.8
+    # Check if showtime was found
+    if normal_price is None:
+        print(f"\nERROR: Showtime {showtime_id} not found!")
+        return
+
     total_price = (normal * normal_price) + (discount * discount_price)
 
     # Generate booking ID
