@@ -1,327 +1,315 @@
-
-
 from datetime import datetime
 
-
-TICKET_PRICE = 15.00
-STUDENT_DISCOUNT = 0.20
-
-
-MOVIES_FILE = "Cinema/Database/movie_listings.txt"
-BOOKINGS_FILE = "Cinema/Database/movie_bookings.txt"
-
-
-
-def setup():
-    """Create sample data files"""
-    try:
-        # Create movies file
-        open(MOVIES_FILE, 'a').close()
-        with open(MOVIES_FILE, 'r') as f:
-            if not f.read():
-                with open(MOVIES_FILE, 'w') as f:
-                    f.write("M01,Avengers,Hall A,2025-10-08,10:00\n")
-                    f.write("M02,Frozen,Hall B,2025-10-08,14:00\n")
-                    f.write("M03,Spider-Man,Hall A,2025-10-08,18:00\n")
-
-        # Create bookings file
-        open(BOOKINGS_FILE, 'a').close()
-    except:
-        pass
-
+# File names - Change these if your files have different names
+MOVIE_FILE = "Cinema/Database/movie_listings.txt"
+SHOWTIME_FILE = "Cinema/Database/movie_showtimes.txt"
+BOOKING_FILE = "Cinema/Database/movie_bookings.txt"
+AUDITORIUM_FILE = "Cinema/Database/auditorium_info.txt"
 
 
 def view_movies():
     """Show all movies"""
-    print("\n" + "=" * 60)
-    print("AVAILABLE MOVIES")
-    print("=" * 60)
-    print(f"{'ID':<6} {'Title':<15} {'Hall':<10} {'Date':<12} {'Time'}")
-    print("-" * 60)
+    print("\n========== AVAILABLE MOVIES ==========")
 
-    with open(MOVIES_FILE, 'r') as f:
-        for line in f:
-            m = line.strip().split(',')
-            print(f"{m[0]:<6} {m[1]:<15} {m[2]:<10} {m[3]:<12} {m[4]}")
+    file = open(MOVIE_FILE, 'r')
+    lines = file.readlines()
+    file.close()
+
+    for i in range(1, len(lines)):
+        if lines[i].strip() == "":
+            continue
+
+        parts = lines[i].split(',')
+        movie_id = parts[0].strip()
+        movie_name = parts[1].strip().replace('"', '')
+        genre = parts[4].strip()
+
+        print(f"{movie_id} - {movie_name} ({genre})")
+
+    print("=" * 40)
+
+
+def view_auditoriums():
+    """Show all auditoriums"""
+    print("\n========== AUDITORIUMS ==========")
+
+    file = open(AUDITORIUM_FILE, 'r')
+    lines = file.readlines()
+    file.close()
+
+    for i in range(1, len(lines)):
+        if lines[i].strip() == "":
+            continue
+
+        parts = lines[i].split(',')
+        audi_id = parts[0].strip()
+        audi_type = parts[1].strip()
+        capacity = parts[2].strip()
+        price = parts[5].strip()
+
+        print(f"{audi_id} - {audi_type} Hall | Capacity: {capacity} | Price: RM{price}")
+
+    print("=" * 40)
+
+
+def view_showtimes():
+    """Show all showtimes"""
+    print("\n========== MOVIE SHOWTIMES ==========")
+
+    file = open(SHOWTIME_FILE, 'r')
+    lines = file.readlines()
+    file.close()
+
+    for i in range(1, len(lines)):
+        if lines[i].strip() == "":
+            continue
+
+        parts = lines[i].split(',')
+        showtime_id = parts[0].strip()
+        movie_id = parts[1].strip()
+        audi_id = parts[2].strip()
+        date = parts[3].strip()
+        start = parts[4].strip()
+
+        print(f"{showtime_id}: Movie {movie_id} | Hall {audi_id} | {date} at {start}")
+
+    print("=" * 40)
 
 
 def view_bookings():
     """Show all bookings"""
-    print("\n" + "=" * 70)
-    print("ALL BOOKINGS")
-    print("=" * 70)
-    print(f"{'ID':<8} {'Name':<15} {'Movie':<8} {'Seats':<8} {'Price':<10} {'Status'}")
-    print("-" * 70)
+    print("\n========== ALL BOOKINGS ==========")
 
-    with open(BOOKINGS_FILE, 'r') as f:
-        lines = f.readlines()
-        if not lines:
-            print("No bookings found.")
-            return
-        for line in lines:
-            b = line.strip().split(',')
-            print(f"{b[0]:<8} {b[1]:<15} {b[2]:<8} {b[3]:<8} RM{b[4]:<8} {b[5]}")
+    file = open(BOOKING_FILE, 'r')
+    lines = file.readlines()
+    file.close()
 
+    count = 0
+    for i in range(1, len(lines)):
+        if lines[i].strip() == "":
+            continue
+
+        parts = lines[i].split(',')
+        booking_id = parts[0].strip()
+        movie_id = parts[1].strip()
+        customer_id = parts[3].strip()
+        seats = parts[4].strip()
+
+        print(f"{booking_id}: Movie {movie_id} | Customer {customer_id} | Seats: {seats}")
+        count = count + 1
+
+    if count == 0:
+        print("No bookings yet.")
+
+    print("=" * 40)
 
 
 def book_ticket():
     """Book a new ticket"""
-    print("\n" + "=" * 50)
-    print("BOOK TICKET")
-    print("=" * 50)
-
+    print("\n========== BOOK TICKET ==========")
 
     view_movies()
+    view_auditoriums()
+    view_showtimes()
 
+    # Get booking info
+    print("\nEnter details:")
+    movie_id = input("Movie ID: ")
+    auditorium_id = input("Auditorium ID: ")
+    showtime_id = input("Showtime ID: ")
+    customer_id = input("Customer ID: ")
+    seats = input("Seats (A1 or A1|A2): ")
+    tickets = input("Tickets (normal|discount like 1|0): ")
 
-    movie_id = input("\nMovie ID: ").strip().upper()
-    name = input("Customer Name: ").strip()
-    seat = input("Seat (e.g., A1): ").strip().upper()
-    is_student = input("Student? (Y/N): ").strip().upper()
-
-
-    if not movie_id or not name or not seat:
-        print("Error: All fields required!")
+    # Check all fields filled
+    if not movie_id or not auditorium_id or not showtime_id or not customer_id or not seats or not tickets:
+        print("\nERROR: Fill all fields!")
         return
 
+    # Check tickets format
+    if "|" not in tickets:
+        print("\nERROR: Tickets must be like 1|0 or 2|1")
+        return
 
-    price = TICKET_PRICE
-    if is_student == 'Y':
-        price = price * (1 - STUDENT_DISCOUNT)
+    # Count seats
+    if "|" in seats:
+        seat_list = seats.split('|')
+        total_seats = len(seat_list)
+    else:
+        seat_list = [seats]
+        total_seats = 1
 
+    # Count tickets
+    ticket_parts = tickets.split('|')
+    normal = int(ticket_parts[0])
+    discount = int(ticket_parts[1])
+    total_tickets = normal + discount
 
-    print(f"\nCustomer: {name}")
+    # Check seats = tickets
+    if total_seats != total_tickets:
+        print(f"\nERROR: {total_seats} seats but {total_tickets} tickets!")
+        return
+
+    # Check for duplicate seats
+    file = open(BOOKING_FILE, 'r')
+    lines = file.readlines()
+    file.close()
+
+    for i in range(1, len(lines)):
+        if lines[i].strip() == "":
+            continue
+        parts = lines[i].split(',')
+        if len(parts) < 5:
+            continue
+
+        booked_showtime = parts[2].strip()
+        if booked_showtime == showtime_id:
+            booked_seats = parts[4].strip()
+            if "|" in booked_seats:
+                already_booked = booked_seats.split('|')
+            else:
+                already_booked = [booked_seats]
+
+            for seat in seat_list:
+                if seat.strip() in [s.strip() for s in already_booked]:
+                    print(f"\nERROR: Seat {seat} already booked!")
+                    return
+
+    # Get price
+    file = open(AUDITORIUM_FILE, 'r')
+    lines = file.readlines()
+    file.close()
+
+    normal_price = 24.00
+    for i in range(1, len(lines)):
+        if lines[i].strip() == "":
+            continue
+        parts = lines[i].split(',')
+        if parts[0].strip() == auditorium_id:
+            normal_price = float(parts[5].strip())
+            break
+
+    discount_price = normal_price * 0.8
+    total_price = (normal * normal_price) + (discount * discount_price)
+
+    # Generate booking ID
+    file = open(BOOKING_FILE, 'r')
+    lines = file.readlines()
+    file.close()
+
+    booking_count = len(lines) - 1
+    booking_id = f"B{booking_count + 1:03d}"
+
+    # Show summary
+    print("\n========== SUMMARY ==========")
+    print(f"Booking ID: {booking_id}")
     print(f"Movie: {movie_id}")
-    print(f"Seat: {seat}")
-    print(f"Price: RM{price:.2f}")
+    print(f"Hall: {auditorium_id}")
+    print(f"Showtime: {showtime_id}")
+    print(f"Seats: {seats}")
+    print(f"Normal: {normal} x RM{normal_price:.2f}")
+    print(f"Discount: {discount} x RM{discount_price:.2f}")
+    print(f"TOTAL: RM{total_price:.2f}")
+    print("=" * 30)
 
-
-    confirm = input("\nConfirm? (Y/N): ").strip().upper()
-    if confirm != 'Y':
+    confirm = input("\nConfirm? (Y/N): ")
+    if confirm.upper() != "Y":
         print("Cancelled.")
         return
 
-
-    try:
-        with open(BOOKINGS_FILE, 'r') as f:
-            lines = f.readlines()
-            if lines:
-                last_id = int(lines[-1].split(',')[0][1:])
-                booking_id = f"B{last_id + 1:03d}"
-            else:
-                booking_id = "B001"
-    except:
-        booking_id = "B001"
-
     # Save booking
-    with open(BOOKINGS_FILE, 'a') as f:
-        f.write(f"{booking_id},{name},{movie_id},{seat},{price:.2f},Active\n")
+    file = open(BOOKING_FILE, 'a')
+    file.write(
+        f"{booking_id}, {movie_id}, {showtime_id}, {customer_id}, {seats}, {tickets}, {total_price:.2f}, {auditorium_id}\n")
+    file.close()
 
-
-    print("\n" + "=" * 40)
-    print("RECEIPT")
-    print("=" * 40)
+    print("\n✓ Booking successful!")
     print(f"Booking ID: {booking_id}")
-    print(f"Customer: {name}")
-    print(f"Movie: {movie_id}")
-    print(f"Seat: {seat}")
-    print(f"Price: RM{price:.2f}")
-    print(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-    print("=" * 40)
-    print("Thank you!")
-
 
 
 def cancel_booking():
     """Cancel a booking"""
-    print("\n" + "=" * 50)
-    print("CANCEL BOOKING")
-    print("=" * 50)
-
+    print("\n========== CANCEL BOOKING ==========")
 
     view_bookings()
 
-
-    booking_id = input("\nBooking ID to cancel: ").strip().upper()
+    booking_id = input("\nBooking ID to cancel: ")
     if not booking_id:
-        print("Error: Booking ID required!")
+        print("ERROR: Enter booking ID!")
         return
 
-
-    with open(BOOKINGS_FILE, 'r') as f:
-        bookings = f.readlines()
-
+    # Read all bookings
+    file = open(BOOKING_FILE, 'r')
+    lines = file.readlines()
+    file.close()
 
     found = False
-    for i, line in enumerate(bookings):
-        b = line.strip().split(',')
-        if b[0] == booking_id:
-            if b[5] == "Cancelled":
-                print("Already cancelled!")
-                return
+    new_lines = [lines[0]]
 
-            print(f"\nCustomer: {b[1]}")
-            print(f"Movie: {b[2]}")
-            print(f"Seat: {b[3]}")
+    for i in range(1, len(lines)):
+        if lines[i].strip() == "":
+            continue
 
-            confirm = input("\nConfirm cancel? (Y/N): ").strip().upper()
-            if confirm != 'Y':
-                print("Aborted.")
-                return
-
-            b[5] = "Cancelled"
-            bookings[i] = ','.join(b) + '\n'
+        parts = lines[i].split(',')
+        if parts[0].strip() == booking_id:
             found = True
-            break
+            print(f"\nFound: {lines[i].strip()}")
+
+            confirm = input("Cancel? (Y/N): ")
+            if confirm.upper() == "Y":
+                print(f"\n✓ Booking {booking_id} cancelled!")
+            else:
+                new_lines.append(lines[i])
+                print("Cancelled.")
+        else:
+            new_lines.append(lines[i])
 
     if not found:
-        print("Booking not found!")
+        print(f"ERROR: Booking {booking_id} not found!")
         return
 
-
-    with open(BOOKINGS_FILE, 'w') as f:
-        f.writelines(bookings)
-
-    print(f"\nBooking {booking_id} cancelled!")
-
+    # Save updated bookings
+    file = open(BOOKING_FILE, 'w')
+    file.writelines(new_lines)
+    file.close()
 
 
-def modify_booking():
-    """Modify customer name"""
-    print("\n" + "=" * 50)
-    print("MODIFY BOOKING")
-    print("=" * 50)
-
-
-    view_bookings()
-
-
-    booking_id = input("\nBooking ID: ").strip().upper()
-    if not booking_id:
-        print("Error: Booking ID required!")
-        return
-
-    with open(BOOKINGS_FILE, 'r') as f:
-        bookings = f.readlines()
-
-    found = False
-    for i, line in enumerate(bookings):
-        b = line.strip().split(',')
-        if b[0] == booking_id:
-            if b[5] == "Cancelled":
-                print("Cannot modify cancelled booking!")
-                return
-
-            print(f"\nCurrent name: {b[1]}")
-            new_name = input("New name: ").strip()
-
-            if not new_name:
-                print("Name cannot be empty!")
-                return
-
-            b[1] = new_name
-            bookings[i] = ','.join(b) + '\n'
-            found = True
-            break
-
-    if not found:
-        print("Booking not found!")
-        return
-
-    with open(BOOKINGS_FILE, 'w') as f:
-        f.writelines(bookings)
-
-    print(f"\nBooking {booking_id} updated!")
-
-def process_payment():
-    """Process payment"""
-    print("\n" + "=" * 50)
-    print("PROCESS PAYMENT")
-    print("=" * 50)
-
-    view_bookings()
-
-    booking_id = input("\nBooking ID: ").strip().upper()
-    if not booking_id:
-        print("Error: Booking ID required!")
-        return
-
-    with open(BOOKINGS_FILE, 'r') as f:
-        for line in f:
-            b = line.strip().split(',')
-            if b[0] == booking_id:
-                if b[5] == "Cancelled":
-                    print("Cannot pay for cancelled booking!")
-                    return
-
-                print(f"\nCustomer: {b[1]}")
-                print(f"Amount: RM{b[4]}")
-                print("\nPayment: 1.Cash 2.Card 3.E-Wallet")
-
-                method = input("Select: ").strip()
-                if method not in ['1', '2', '3']:
-                    print("Invalid method!")
-                    return
-
-                methods = {'1': 'Cash', '2': 'Card', '3': 'E-Wallet'}
-
-                print("\n" + "=" * 40)
-                print("PAYMENT RECEIPT")
-                print("=" * 40)
-                print(f"Booking: {b[0]}")
-                print(f"Customer: {b[1]}")
-                print(f"Amount: RM{b[4]}")
-                print(f"Method: {methods[method]}")
-                print(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-                print("=" * 40)
-                print("Payment successful!")
-                return
-
-        print("Booking not found!")
-
-
-def main():
+def main_ticketing_clerk():
     """Main program"""
-    setup()
-
-    print("*" * 50)
-    print(" CINEMA TICKETING SYSTEM")
-    print("*" * 50)
+    print("=" * 50)
+    print("   CINEMA TICKETING SYSTEM")
+    print("=" * 50)
 
     while True:
-        print("\n" + "=" * 50)
-        print("MENU")
-        print("=" * 50)
+        print("\n========== MENU ==========")
         print("1. View Movies")
-        print("2. Book Ticket")
-        print("3. View Bookings")
-        print("4. Cancel Booking")
-        print("5. Modify Booking")
-        print("6. Process Payment")
+        print("2. View Auditoriums")
+        print("3. View Showtimes")
+        print("4. Book Ticket")
+        print("5. View Bookings")
+        print("6. Cancel Booking")
         print("7. Exit")
+        print("=" * 27)
 
-        choice = input("\nChoice (1-7): ").strip()
+        choice = input("\nChoice (1-7): ")
 
-        if choice == '1':
+        if choice == "1":
             view_movies()
-        elif choice == '2':
+        elif choice == "2":
+            view_auditoriums()
+        elif choice == "3":
+            view_showtimes()
+        elif choice == "4":
             book_ticket()
-        elif choice == '3':
+        elif choice == "5":
             view_bookings()
-        elif choice == '4':
+        elif choice == "6":
             cancel_booking()
-        elif choice == '5':
-            modify_booking()
-        elif choice == '6':
-            process_payment()
-        elif choice == '7':
+        elif choice == "7":
             print("\nGoodbye!")
             break
         else:
-            print("Invalid choice!")
+            print("ERROR: Choose 1-7")
 
         input("\nPress Enter...")
 
-
-if __name__ == "__main__":
-    main()

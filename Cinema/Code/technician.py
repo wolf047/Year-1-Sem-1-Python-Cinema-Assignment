@@ -234,4 +234,3 @@ def main_technician():
             main()
         else:
             print("!! Invalid Choice, Please Use 1 2 3 ... Format !!")
-main_technician()
