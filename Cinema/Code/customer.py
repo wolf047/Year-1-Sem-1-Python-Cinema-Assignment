@@ -1,11 +1,14 @@
 
 
 # FILE PATHS (plain strings)
-BASE =  r"Cinema/Database"
+BASE =  r"C:\Users\shann\Desktop\Comp-Science(AI)\Int-Python-programming\Assignment\Cinema\Database"
 MOVIE_FILE    = BASE + r"/movie_listings.txt"      # where movie rows are stored
 SHOW_FILE     = BASE + r"/movie_showtimes.txt"     # where showtime rows are stored
-CUSTOMER_FILE = BASE + r"/customers.txt"      # where customer rows are stored
+CUSTOMER_FILE = BASE + r"/customer.txt"      # where customer rows are stored
 BOOKING_FILE  = BASE + r"/movie_bookings.txt"      # where booking rows are stored
+AUD_SITTING_FILE = BASE + r"/auditorium_sitting.txt"  # where auditorium seating layouts are stored
+DISCOUNT_FILE = BASE + r"/discount_policies.txt"  # where discount policies are stored
+
 
 # BASIC INPUT / STRING HELPERS
 def safe_input(msg):                        # define a function that shows a message and reads user typing
@@ -88,27 +91,150 @@ def load_movies():                                                       # read 
     f.close()                                                            # close the file
     return movies                                                        # return the list (maybe empty)
 
-def load_showtimes():                                                    # read showtimes we care about
+def load_showtimes():                                                    # read showtimes + prices + discount id
     shows = []                                                           # start with an empty list
-    f = open(SHOW_FILE, "r", encoding="utf-8")                           # open showtimes file for reading
+    f = open(SHOW_FILE, "r", encoding="utf-8")                           # open the showtimes file for reading
     first = True                                                         # skip-header flag
     for line in f:                                                       # read line by line
-        if first:                                                        # first line is header
-            first = False                                                # mark consumed
-            continue                                                     # skip it
-        parts = split_csv_line(line)                                     # split row into fields
-        if len(parts) >= 6:                                              # we need at least 6 fields we use below
-            show = {                                                     # make a dictionary with just the fields we print
-                "showtime_id": parts[0],                                 # e.g., ST0001
-                "movie_id":    parts[1],                                 # which movie this showtime belongs to
-                "auditorium":  parts[2],                                 # e.g., AUD01
-                "date":        parts[3],                                 # "YYYY-MM-DD"
-                "start_time":  parts[4],                                 # start time like "18:00"
-                "end_time":    parts[5]                                  # end time like "20:45"
+        if first:                                                        # first row is the header text
+            first = False                                                # mark it as consumed
+            continue                                                     # skip the header
+        parts = split_csv_line(line)                                     # split row into columns (by comma)
+        if len(parts) >= 9:                                              # make sure we have all 9 columns
+            show = {                                                     # build a dictionary for one showtime
+                "showtime_id":      parts[0],                            # e.g. ST0001
+                "movie_id":         parts[1],                            # e.g. M001
+                "auditorium":       parts[2],                            # e.g. AUD01
+                "date":             parts[3],                            # e.g. 12-10-2025
+                "start_time":       parts[4],                            # e.g. 0900
+                "end_time":         parts[5],                            # e.g. 1150
+                "normal_price":     parts[6],                            # e.g. 24.00 (text—we print it as-is)
+                "discounted_price": parts[7],                            # e.g. 21.60 (may be empty)
+                "discount_id":      parts[8]                             # e.g. D02 (may be empty)
             }
-            shows.append(show)                                           # store it in the list
+            shows.append(show)
     f.close()                                                            # close the file
-    return shows                                                         # return list (maybe empty)
+    return shows                                                         # return list (maybe empty)  
+
+
+def load_discounts():                                      # read discount rules into a dict
+    discs = {}                                             # e.g. {"D02": {"name": "...", "policy": "..."}}
+    f = open(DISCOUNT_FILE, "r", encoding="utf-8")         # open the discount file to read text
+    first = True                                           # flag to skip header
+    for line in f:                                         # go line-by-line
+        if first:                                          # first line is the header row
+            first = False                                  # mark header as consumed
+            continue                                       # skip it
+        parts = split_csv_line(line)                       # split by comma (simple split you already have)
+        # We expect: [discount_id, name, policy...]  (policy may contain commas)
+        if len(parts) >= 2:                                # need at least id + name
+            disc_id = parts[0]                             # e.g. "D02"
+            name    = parts[1]                             # e.g. "Students/kids/seniors/OKU"
+            # IMPORTANT: join everything from index 2 to the end to rebuild the full policy, keeping commas
+            policy  = ", ".join(parts[2:]).strip()         # e.g. "10% off for students, kids, senior citizens, and OKU."
+            discs[disc_id] = {"name": name, "policy": policy}  # store in a dictionary
+    f.close()                                              # close file
+    return discs                                           # give back the dictionary
+
+
+
+
+
+
+def load_auditorium_seats():                                   # read the seating map for every auditorium
+    seats_by_aud = {}                                          # will store something like {"AUD01": ["A01","A02",...], ...}
+    lines = read_all_lines(AUD_SITTING_FILE)                   # read every line from auditorium_sitting.txt
+    current_aud = None                                         # we'll remember which auditorium we're currently reading
+    for line in lines:                                         # go through the file line by line
+        txt = line.strip()                                     # remove spaces on both ends
+        if txt == "":                                          # skip empty lines (they separate auditoriums)
+            continue
+        if txt.startswith("AUD"):                              # lines like "AUD01", "AUD02" mark a new auditorium
+            current_aud = txt                                  # remember this auditorium id
+            if current_aud not in seats_by_aud:                # if it's not already a key in our dict
+                seats_by_aud[current_aud] = []                 # create an empty list for its seat IDs
+            continue                                           # move to next line
+        # seat lines have tokens like  A01:[O]  B10:[O]  etc, separated by spaces
+        pieces = txt.split()                                   # split by spaces (many will just be seat tokens)
+        for token in pieces:                                   # check each piece
+            if ":" in token:                                   # seat tokens contain a colon, like "A01:[O]"
+                seat_id = token.split(":")[0]                  # take only the part before ":" → "A01"
+                seat_id = seat_id.strip()                      # trim just in case
+                if current_aud is not None and seat_id != "":  # only keep if we know which auditorium we're in
+                    seats_by_aud[current_aud].append(seat_id)  # add seat to that auditorium's list
+    return seats_by_aud                                        # give back the full dictionary
+
+def pad2(n):                          # make 1 -> "01", 9 -> "09", 12 -> "12"
+    s = str(n)                        # turn number into string
+    if len(s) < 2:                    # if shorter than 2 characters
+        s = "0" + s                   # put a "0" in front (prefix)
+    return s                          # give back the 2-digit string
+
+def seat_row_col(seat_id):            # split "B09" into ("B", 9)
+    letters = ""                      # will collect A/B/C...
+    digits = ""                       # will collect 01/02/...
+    for ch in seat_id:                # look at each character
+        if ch.isalpha():              # A..Z?
+            letters += ch             # add to the row letters
+        else:                         # not a letter → assume digit
+            digits += ch              # add to the number string
+    col = 0
+    if digits != "":                  # if we found digits
+        col = int(digits)             # convert digits to an integer
+    return letters, col               # return ("B", 9) for "B09"
+
+def print_seat_map(aud_id, taken_seats, seats_by_aud):
+    # If we don't have a layout for this auditorium, say so
+    if aud_id not in seats_by_aud:
+        print("No seating layout found for", aud_id)
+        return
+
+    valid = seats_by_aud[aud_id]      # all seat codes that exist in this room
+    row_to_cols = {}                  # will map "A" -> [1,2,3,...]
+    max_col = 0
+
+    # Build row -> columns and remember largest column number
+    for seat in valid:
+        r, c = seat_row_col(seat)     # e.g. "A05" -> ("A", 5)
+        if r not in row_to_cols:
+            row_to_cols[r] = []
+        if c not in row_to_cols[r]:
+            row_to_cols[r].append(c)
+        if c > max_col:
+            max_col = c
+
+    # Sort rows alphabetically; each row's columns numerically
+    rows = []
+    for r in row_to_cols:
+        rows.append(r)
+    rows.sort()
+    for r in rows:
+        row_to_cols[r].sort()
+
+    # Legend + column header
+    print("Legend: [ ] = available   [X] = taken")
+    header = "    "                   # 4 spaces to align under row labels
+    for c in range(1, max_col + 1):
+        header = header + " " + pad2(c) + " "
+    print(header)
+
+    # One line per row, marking each seat spot
+    for r in rows:
+        line = r + " :"               # row label, e.g. "A :"
+        existing = row_to_cols[r]     # which seat numbers exist in this row
+        for c in range(1, max_col + 1):
+            seat_code = r + pad2(c)   # build code like "A05"
+            if c in existing:         # seat physically exists here?
+                if seat_code in taken_seats:
+                    line = line + " [X]"   # already booked
+                else:
+                    line = line + " [ ]"   # free
+            else:
+                line = line + "    "       # gap (keeps columns aligned)
+        print(line)
+    print()                          # blank line after the map
+
+                                                      
 
 # LOOKUPS 
 def find_row_by_id(filename, id_index, target_id):                       # find a row where a specific column equals target_id
@@ -119,27 +245,14 @@ def find_row_by_id(filename, id_index, target_id):                       # find 
             return parts                                                 # return the fields list for that row
     return None                                                          # if not found, return None
 
-# VALIDATED PROMPTS (keep asking until correct) 
-def ask_existing_customer_login():                                          # ask user for a real customer id
-    while True:                                                          # keep asking until we can return
-        cid = safe_input("Enter your customer ID (e.g. C0001): ")        # ask for id
-        if find_row_by_id(CUSTOMER_FILE, 0, cid):                        # check column 0 in customers file
-            return cid                                                   # valid -> return it
-        print("Customer ID not found. Try again.")                       # otherwise tell and loop
+def get_auditorium_for_showtime(showtime_id):                  # find which auditorium a given showtime uses
+    row = find_row_by_id(SHOW_FILE, 0, showtime_id)            # look for the row whose column-0 == showtime_id
+    if row is None or len(row) < 3:                            # if not found or malformed
+        return None                                            # we can't tell the auditorium
+    return row[2]                                              # column-2 is auditorium_id (e.g., "AUD01")
 
-def ask_existing_movie_id():                                             # ask user for a real movie id
-    movies = load_movies()                                               # read movies for display
-    if len(movies) == 0:                                                 # if there are no data rows
-        print("No movies found in", MOVIE_FILE)                          # tell the user to put some data
-    else:
-        print("=== Movies ===")                                          # heading
-        for m in movies:                                                 # show "M0001 - Title"
-            print(m["movie_id"] + " - " + m["movie_name"])
-    while True:                                                          # keep asking until valid
-        mid = safe_input("Enter Movie ID (e.g. M0001): ")                # ask for a movie id
-        if find_row_by_id(MOVIE_FILE, 0, mid):                           # check column 0 in movies file
-            return mid                                                   # valid -> return it
-        print("Invalid Movie ID. Try again.")                            # otherwise loop
+
+# VALIDATED PROMPTS (keep asking until correct) 
 
 def ask_existing_showtime_id_for_movie(movie_id):                        # ask for a showtime that belongs to that movie
     shows = load_showtimes()                                             # read all showtimes
@@ -173,38 +286,55 @@ def ask_existing_customer_login():
     while True:
         cid = safe_input("Customer ID (e.g. C0001): ")
         pwd = safe_input("Password: ")
-        lines = read_all_lines(CUSTOMER_FILE)          # read all customer rows
-        for i in range(1, len(lines)):                 # skip header
-            parts = split_csv_line(lines[i])           # split into fields
+        lines = read_all_lines(CUSTOMER_FILE)                           # read all customer rows
+        for i in range(1, len(lines)):                                  # skip header
+            parts = split_csv_line(lines[i])                            # split into list
             # expected order: [id, name, phone, email, password]
             if len(parts) >= 5 and parts[0] == cid and parts[4] == pwd:
-                return cid                             # success
+                return cid                                              # success
         print("ID or password is incorrect. Try again.")
+
+def ask_existing_movie_id():                                             # ask user for a real movie id
+    movies = load_movies()                                               # read movies for display (list of dicts)
+    if len(movies) == 0:                                                 # if there are no data rows
+        print("No movies found in", MOVIE_FILE)                          # tell the user to put some data
+    else:
+        print("=== Movies ===")                                          # heading
+        for m in movies:                                                 # show lines like "M0001 - Interstellar"
+            print(m["movie_id"] + " - " + m["movie_name"])
+
+    while True:                                                          # keep asking until valid
+        mid = safe_input("Enter Movie ID (e.g. M001): ")                # ask for a movie id (as typed text)
+        # look for a row in MOVIE_FILE where column 0 equals the typed id
+        if find_row_by_id(MOVIE_FILE, 0, mid):                           # True => id exists in file
+            return mid                                                   # valid -> return it to the caller
+        print("Invalid Movie ID. Try again.")                            # otherwise loop again
 
 
 # Register + Update personal details 
-def register_customer():                                                 # add a new row to customers.txt
-    lines = read_all_lines(CUSTOMER_FILE)                                # read all current lines
-    cust_id = next_id_by_count(CUSTOMER_FILE, "C")                       # build next id like "C0001"
-    name  = safe_input("Name: ")                                         # ask for name (any text)
-    phone = safe_input("Phone (digits only, include 60): ")                          # ask for phone
-    while not phone.isdigit():                                           # check phone is digits only
+def register_customer():  # add a new row to customers.txt
+    cust_id = next_id_by_count(CUSTOMER_FILE, "C")  # build next id like "C0001"
+    name  = safe_input("Name: ")
+    phone = safe_input("Phone (digits only, include 60): ")
+    while not phone.isdigit():
         print("Phone must be digits only.")
         phone = safe_input("Phone (digits only): ")
-    email = safe_input("Email: ")                                        # ask for email
-    while "@" not in email:                                              # very simple email check
+    email = safe_input("Email: ")
+    while "@" not in email:
         print("Email must contain '@'.")
         email = safe_input("Email: ")
+
     while True:
         pwd1 = safe_input("Create password: ")
         pwd2 = safe_input("Confirm password: ")
         if pwd1 != "" and pwd1 == pwd2:
             break
-        print("Passwords fo not match or are empty. Try again!")
+        print("Passwords do not match or are empty. Try again!")
 
-    new_row = join_csv([cust_id, name, phone, email, pwd1])                    # build a CSV-like line
-    append_line(CUSTOMER_FILE, new_row)                                  # append to customers file
+    new_row = join_csv([cust_id, name, phone, email, pwd1])              # build a CSV-like line
+    append_line(CUSTOMER_FILE, new_row)                                  # append to customers file           
     print("Registered! Your customer ID is:", cust_id)                   # show the new id
+
 
 def update_my_details():                                                 # define a function to edit your saved details
     lines = read_all_lines(CUSTOMER_FILE)                                # read every line from customers.txt into a list
@@ -260,35 +390,42 @@ def update_my_details():                                                 # defin
 
 
 # View current vs upcoming movies 
-def view_all_movie_showtimes():                      # define a function with no inputs (we'll call it from the menu)
-    # Load movies and showtimes
-    movies = load_movies()                           # call our helper to read movie_listings.txt -> list of dicts (id + name)
-    shows  = load_showtimes()                        # call our helper to read movie_showtimes.txt -> list of dicts (show info)
+def view_all_movie_showtimes():                      # show all showtimes (with prices + discount info)
+    movies = load_movies()                           # list of {"movie_id","movie_name"}
+    shows  = load_showtimes()                        # list of showtime dicts (now includes prices + discount_id)
+    discs  = load_discounts()                        # dictionary of discount rules, by discount_id
 
-    # Basic empty check
-    if len(movies) == 0 or len(shows) == 0:          # if either list is empty (no movies OR no showtimes)
-        print("No movies or showtimes to display.")  # tell the user there’s nothing to list
-        return                                       # leave the function early (stop here)
+    if len(movies) == 0 or len(shows) == 0:          # if either file has no data rows
+        print("No movies or showtimes to display.")
+        return
 
-    # Map movie_id -> movie_name for easy lookup
-    name_of = {}                                     # create an empty dictionary (we’ll fill it with id -> name)
-    for m in movies:                                 # loop through every movie dictionary in the movies list
-        name_of[m["movie_id"]] = m["movie_name"]     # store the name under its id, e.g. name_of["M0001"] = "Interstellar"
+    # build a quick map from movie_id -> movie_name for printing titles
+    name_of = {}
+    for m in movies:
+        name_of[m["movie_id"]] = m["movie_name"]
 
-    # Print every showtime in a numbered list (keep date format as-is)
-    print("=== All Movie Showtimes ===")             # print a simple heading so the output looks nice
-    n = 1                                            # start our numbering at 1 (for "1.", "2.", "3.", ...)
-    for s in shows:                                  # loop through every showtime dictionary in the shows list
-        movie_name = name_of.get(                    # look up the movie title for this showtime’s movie_id
-            s["movie_id"],                           # key to look up (e.g. "M0001")
-            "(title not found)"                      # default text if the id is missing in our name_of map
-        )
-        print(str(n) + ". Movie:", movie_name)       # e.g. "1. Movie: Interstellar"  (str(n) turns 1 into "1")
-        print("   date:", s["date"])                 # print the date exactly as stored, e.g. 2025-10-04
-        print("   time:", s["start_time"])           # print the start time, e.g. 18:00
-        print("   venue:", s["auditorium"])          # print the auditorium id, e.g. AUD01
-        print()                                      # print a blank line to separate entries (just for readability)
-        n = n + 1                                    # increase the number for the next showtime (1 -> 2 -> 3 ...)
+    print("=== All Movie Showtimes ===")
+    n = 1
+    for s in shows:
+        title = name_of.get(s["movie_id"], "(title not found)")
+        print(str(n) + ". Movie:", title)            # numbered movie title line
+        print("   date:", s["date"])                 # show date (as text from file)
+        print("   time:", s["start_time"])           # show start time
+        print("   venue:", s["auditorium"])          # auditorium id
+
+        # --- NEW: prices ---
+        if s["normal_price"] != "":                  # print normal price if present
+            print("   normal price: RM", s["normal_price"])
+        if s["discounted_price"] != "" and s["discount_id"] != "":  # only if the file has a discount filled in
+            did = s["discount_id"]                                   # e.g. D02
+            rule = discs.get(did, None)                               # look up rule text by id
+            print("   discounted price: RM", s["discounted_price"])   # show discounted price
+            if rule is not None:
+                # show the rule name + policy to guide the user
+                print("   discount:", did, "-", rule["name"])
+                print("   who qualifies: 10% off for students, kids, senior citizens, and OKU.")
+        print()                                      # blank line between entries
+        n = n + 1
 
 
 # helpers for bookings 
@@ -307,47 +444,94 @@ def seats_taken_for_show(showtime_id):                                   # make 
     return taken                                                         # return full list
 
 # TASK 3: Book tickets / Cancel tickets
-def book_ticket():                                                       # create a new booking row
-    cid = ask_existing_customer_login()                                     # ask for a real customer id
-    mid = ask_existing_movie_id()                                        # ask for a real movie id
-    sid = ask_existing_showtime_id_for_movie(mid)                        # ask for a real showtime of that movie
-    # choose seats
-    while True:                                                          # keep asking until valid and free
-        raw = safe_input("Seats (e.g. A01|A02): ")                       # ask for seat codes separated by |
-        pieces = raw.split("|")                                          # split into a list
-        chosen = []                                                      # will store cleaned unique seats
-        for p in pieces:                                                 # check each typed piece
-            s = p.strip()                                                # remove spaces
-            if s != "" and s not in chosen:                              # ignore empty and duplicates
-                chosen.append(s)                                         # keep it
-        if len(chosen) == 0:                                             # must have at least one
-            print("Enter at least one seat.")
-            continue                                                     # ask again
-        taken = seats_taken_for_show(sid)                                # list of already booked seats
-        conflict = False                                                 # assume no conflicts first
-        for s in chosen:                                                 # check each chosen seat
-            if s in taken:                                               # if already taken
-                print("Seat", s, "already taken. Pick others.")          # show message
-                conflict = True                                          # mark conflict
-        if conflict:                                                     # if any conflict happened
-            continue                                                     # ask again
-        # rebuild normalized seats text like "A01|A02|B03" using a loop
-        seats_text = ""                                                  # start empty
-        for i in range(len(chosen)):                                     # go through indexes
-            if i == 0:                                                   # first element
-                seats_text = chosen[i]                                   # assign directly
-            else:                                                        # later elements
-                seats_text = seats_text + "|" + chosen[i]                # add pipe and seat code
-        break                                                            # leave loop; seats are valid
-    # ticket counts
-    normal = read_int("Normal tickets: ")                                # ask for normal count
-    disc   = read_int("Discounted tickets: ")                            # ask for discounted count
-    # build booking id and row
-    bid = next_id_by_count(BOOKING_FILE, "B")                            # booking id like "B0001"
-    tickets_text = str(normal) + "|" + str(disc)                         # store "normal|discount"
-    new_row = join_csv([bid, sid, cid, seats_text, tickets_text])        # build the CSV-like line
-    append_line(BOOKING_FILE, new_row)                                   # append to bookings file
-    print("Booked! Your Booking ID is:", bid)                            # confirm to the user
+def book_ticket():
+    cid = ask_existing_customer_login()           # cid = Customer ID string (e.g., "C0003") returned after a valid ID+password login
+    mid = ask_existing_movie_id()                 # mid = Movie ID string the user chose (e.g., "M0002")
+    sid = ask_existing_showtime_id_for_movie(mid) # sid = Showtime ID string (e.g., "ST0007") chosen from showtimes that belong to that movie
+
+    # Figure out auditorium + load seating map ONCE
+    aud_id = get_auditorium_for_showtime(sid)     # aud_id = which auditorium this showtime uses (e.g., "AUD01")
+    seats_map = load_auditorium_seats()           # seats_map = dict like {"AUD01":[seat codes...], "AUD02":[...]} read from auditorium_sitting.txt
+    taken = seats_taken_for_show(sid)             # taken = list of seat codes already booked for this specific showtime (e.g., ["A04","B10"])
+    valid_seats = seats_map.get(aud_id, [])       # valid_seats = list of seats that physically exist in this auditorium; [] if aud_id missing
+
+    print("\n=== Seat Map ===\n")                 
+    print_seat_map(aud_id, taken, seats_map)      # Draws a grid: shows each seat as [ ] (free) or [X] (taken) using the room layout in seats_map
+
+    print("This show is in", aud_id + ". Seats will be checked against that auditorium.\n")  # Inform the user which room they’re picking seats in
+
+    # choose seats (remove duplicates, must exist here, not already taken)
+    while True:                                    # Loop until the user provides a valid seat selection
+        raw = safe_input("Seats (e.g. A01|A02): ") # raw = exact text the user typed, like "A01|A02| B03"
+        pieces = raw.split("|")                    # pieces = ["A01", "A02", " B03"] (split on '|')
+        chosen = []                                # chosen = cleaned list of unique seats we'll accept
+        for p in pieces:                           # go through each typed piece
+            s = p.strip()                          # s = remove spaces → "B03" instead of " B03"
+            if s != "" and s not in chosen:        # ignore empties and duplicates
+                chosen.append(s)                   # keep this seat code
+
+        if len(chosen) == 0:                       # must pick at least one seat
+            print("Enter at least one seat.\n")
+            continue                               # ask again
+
+        # seats must exist in this auditorium
+        bad = [s for s in chosen if s not in valid_seats]  # bad = any seat codes that are NOT in this room’s layout
+        if len(bad) > 0:                                   # if the user typed seats that don't exist here
+            print("These seats are not valid for", aud_id + ":", ", ".join(bad))
+            print("Please choose seats that exist in", aud_id + ".\n")
+            continue                                       # ask again
+
+        # seats must not already be taken
+        conflict = False                          # conflict flag: assume no clashes first
+        for s in chosen:                          # check each seat the user wants
+            if s in taken:                        # if someone has already booked it in this showtime
+                print("Seat", s, "already taken. Pick others.")
+                conflict = True                   # mark a problem so we can re-prompt
+        if conflict:                              # any seat was taken?
+            print("")                             # small blank line for spacing
+            continue                              # re-ask for seats
+
+        # normalize to "A01|A02|B03"
+        seats_text = ""                           # build the text we will save to the file
+        for i in range(len(chosen)):              # walk through chosen seats in order
+            seats_text = chosen[i] if i == 0 else seats_text + "|" + chosen[i]  # add '|' between items
+        break                                     # we have a valid selection; exit the seat-picking loop
+
+    # price summary + discount policy
+    shows = load_showtimes()                      # shows = list of all showtime dicts (includes prices + discount_id)
+    discs = load_discounts()                      # discs = dict of discount rules by id, e.g., {"D02": {"name": "...", "policy": "..."}}
+    the_show = None                               # will hold the dict for THIS showtime
+    for s in shows:                               # find the showtime dict that matches sid
+        if s["showtime_id"] == sid:
+            the_show = s
+            break
+
+    print("")                                     # spacing before price info
+    if the_show is not None:                      # safety: only show prices if we successfully found the show
+        if the_show["normal_price"] != "":        # print normal price if present
+            print("Normal price per ticket: RM", the_show["normal_price"])
+        if the_show["discounted_price"] != "" and the_show["discount_id"] != "":  # only if discounted info is set
+            did = the_show["discount_id"]         # did = discount id, e.g., "D02"
+            print("Discounted price per ticket: RM", the_show["discounted_price"])
+            if did in discs:                      # if we have a policy entry for this discount id
+                print("Discount:", did, "-", discs[did]["name"])   # short label/name
+                print("Who qualifies: 10% off for students, kids, senior citizens, and OKU.")      # full sentence policy text from file
+        else:
+            print("No discount set for this showtime.")            # nothing special for this show
+    print("")                                     # extra spacing before ticket counts
+
+    normal = read_int("Normal tickets: ")         # normal = integer count of regular tickets
+    disc = 0                                      # default: 0 discounted tickets
+    if the_show is not None and the_show["discounted_price"] != "" and the_show["discount_id"] != "":
+        disc = read_int("Discounted tickets (if you qualify): ")   # disc = integer count of discounted tickets
+
+    bid = next_id_by_count(BOOKING_FILE, "B")     # bid = new Booking ID (e.g., "B0007") based on number of rows in booking file
+    tickets_text = str(normal) + "|" + str(disc)  # tickets_text = "normal|discount" (e.g., "2|1")
+    new_row = join_csv([bid, sid, cid, seats_text, tickets_text])  # build CSV-like line in the required column order
+    append_line(BOOKING_FILE, new_row)            # append that line to movie_bookings.txt (adds a newline automatically)
+
+    print("\nBooked! Your Booking ID is:", bid, "\n")  # final confirmation to the user
+
 
 def cancel_ticket():                                                     # delete one of my bookings
     lines = read_all_lines(BOOKING_FILE)                                 # read all bookings
@@ -396,47 +580,34 @@ def view_booking_history():                                              # print
     if not any_printed:                                                  # if nothing printed
         print("No bookings found.")                                      # message
 
-def view_seat_info_for_showtime():                                       # show taken seats for a chosen showtime
-    mid = ask_existing_movie_id()                                        # pick a valid movie
-    sid = ask_existing_showtime_id_for_movie(mid)                        # pick a valid showtime for that movie
-    taken = seats_taken_for_show(sid)                                    # list of taken seats
-    print("=== Seat Info for", sid, "===")                               # heading
-    print("Taken seats count:", len(taken))                              # how many
-    if len(taken) == 0:                                                  # if none
-        print("Taken seats: (none)")                                     # say none
-    else:
-        # build one line like "A01, A02, B03" using a loop
-        line = ""                                                        # start empty
-        for i in range(len(taken)):                                      # go through each taken seat
-            if i == 0:                                                   # first one
-                line = taken[i]                                          # just assign it
-            else:                                                        # others
-                line = line + ", " + taken[i]                            # add comma, space, and the seat
-        print("Taken seats:", line)                                      # print the built line
+
 
 # MENU (only the 4 tasks)
-def main_customer():                                                              # main menu loop
+def main_customer():                                                      # main menu loop
     while True:                                                          # keep showing options until user exits
         print("\n=== CUSTOMER MENU ===")                                 # a blank line then the title
         print("[1] Register / Create account")                           # option 1
         print("[2] Update my account details")                           # option 2
-        print("[3] View all movie showtimes (Movie/Date/Time/Venue)")                     # option 3
+        print("[3] View all movie showtimes (Movie/Date/Time/Venue)")    # option 3
         print("[4] Book tickets")                                        # option 4
         print("[5] Cancel my ticket")                                    # option 5
         print("[6] View my booking history")                             # option 6
-        print("[7] View seat info for a showtime")                       # option 7
-        print("[0] Exit")                                                # option 0
-        choice = read_int("Enter your choice: ")                          # read a number safely
+        print("[0] Exit")                                                # option 0   <-- REMOVED the old [7] line
+        choice = read_int("Enter your choice: ")                         # read a number safely
 
         if choice == 1:   register_customer()                            # run register
         elif choice == 2: update_my_details()                            # run update
-        elif choice == 3: view_all_movie_showtimes()             # run view current/upcoming
+        elif choice == 3: view_all_movie_showtimes()                     # run view current/upcoming
         elif choice == 4: book_ticket()                                  # run book
         elif choice == 5: cancel_ticket()                                # run cancel
         elif choice == 6: view_booking_history()                         # run history
-        elif choice == 7: view_seat_info_for_showtime()                  # run seat info
         elif choice == 0:                                                 # exit
-            main()                                                        # leave the loop and end program
+            print("Goodbye!")                                            # goodbye text
+            # main()
+            break                                                        # leave the loop and end program
         else:
-            print("Invalid choice. Try again.")                          # anything else -> error then loop
+            print("Invalid choice. Try again.")                          # anything else -> errors then loop
 
+
+if __name__ == "__main__":                                               # this is True when we press Run on this file
+    main_customer()                                                               # start the program
