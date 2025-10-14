@@ -1,6 +1,5 @@
 from datetime import datetime
 
-# File names - Change these if your files have different names
 MOVIE_FILE = "movie_listings.txt"
 SHOWTIME_FILE = "movie_showtimes.txt"
 BOOKING_FILE = "movie_bookings.txt"
@@ -112,7 +111,7 @@ def book_ticket():
     view_auditoriums()
     view_showtimes()
 
-    # Get booking info
+    # To get booking info
     print("\nEnter details:")
     movie_id = input("Movie ID: ")
     auditorium_id = input("Auditorium ID: ")
@@ -121,17 +120,17 @@ def book_ticket():
     seats = input("Seats (A1 or A1|A2): ")
     tickets = input("Tickets (normal|discount like 1|0): ")
 
-    # Check all fields filled
+    # To Check if all fields are filled
     if not movie_id or not auditorium_id or not showtime_id or not customer_id or not seats or not tickets:
         print("\nERROR: Fill all fields!")
         return
 
-    # Check tickets format
+    # To Check tickets format
     if "|" not in tickets:
         print("\nERROR: Tickets must be like 1|0 or 2|1")
         return
 
-    # Count seats
+    # To Count seats
     if "|" in seats:
         seat_list = seats.split('|')
         total_seats = len(seat_list)
@@ -139,18 +138,18 @@ def book_ticket():
         seat_list = [seats]
         total_seats = 1
 
-    # Count tickets
+    # To Count tickets
     ticket_parts = tickets.split('|')
     normal = int(ticket_parts[0])
     discount = int(ticket_parts[1])
     total_tickets = normal + discount
 
-    # Check seats = tickets
+    # To Check if number of seats are equal to number of tickets
     if total_seats != total_tickets:
         print(f"\nERROR: {total_seats} seats but {total_tickets} tickets!")
         return
 
-    # Check for duplicate seats
+    # To Check if a seat has been booked already
     file = open(BOOKING_FILE, 'r')
     lines = file.readlines()
     file.close()
@@ -175,7 +174,7 @@ def book_ticket():
                     print(f"\nERROR: Seat {seat} already booked!")
                     return
 
-    # Get price from showtime file
+    # To Get price from showtime file
     file = open(SHOWTIME_FILE, 'r')
     lines = file.readlines()
     file.close()
@@ -199,20 +198,19 @@ def book_ticket():
                 discount_price = normal_price
             break
 
-    # Check if showtime was found
     if normal_price is None:
         print(f"\nERROR: Showtime {showtime_id} not found!")
         return
 
     total_price = (normal * normal_price) + (discount * discount_price)
 
-    # Generate booking ID
+
     file = open(BOOKING_FILE, 'r')
     lines = file.readlines()
     file.close()
 
     booking_count = len(lines) - 1
-    booking_id = f"B{booking_count + 1:03d}"
+    booking_id = f"B{booking_count + 1:04d}"
 
     # Show summary
     print("\n========== SUMMARY ==========")
@@ -228,10 +226,10 @@ def book_ticket():
 
     confirm = input("\nConfirm? (Y/N): ")
     if confirm.upper() != "Y":
-        print("Cancelled.")
+        print("Follow the format and try again!.")
         return
 
-    # Save booking
+    # To Save booking
     file = open(BOOKING_FILE, 'a')
     file.write(
         f"{booking_id}, {movie_id}, {showtime_id}, {customer_id}, {seats}, {tickets}, {total_price:.2f}, {auditorium_id}\n")
@@ -274,7 +272,7 @@ def cancel_booking():
                 print(f"\n✓ Booking {booking_id} cancelled!")
             else:
                 new_lines.append(lines[i])
-                print("Cancelled.")
+                print("Follow the format and try again.")
         else:
             new_lines.append(lines[i])
 
