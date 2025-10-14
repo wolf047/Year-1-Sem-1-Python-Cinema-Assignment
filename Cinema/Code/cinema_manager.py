@@ -1418,7 +1418,7 @@ def main_cinema_manager():
         action_choice = validate_int("Select action (enter number 1-17): ")
         if action_choice in action_functions:
             break
-        print("Invalid input: please enter a number 1-17.")
+        print(color_error_message("Invalid input: please enter a number 1-17."))
     confirmed = validate_yes_no(
         f'Confirm action: {actions[action_choice - 1].lower()}? [Y/N]: ') == "Y"
     if confirmed:

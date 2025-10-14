@@ -1,0 +1,24 @@
+Auditorium 1 | Projector | READY
+Auditorium 1 | Sound | READY
+Auditorium 1 | Air Conditioner | READY
+Auditorium 2 | Projector | READY
+Auditorium 2 | Sound | READY
+Auditorium 2 | Air Conditioner | READY
+Auditorium 3 | Projector | READY
+Auditorium 3 | Sound | READY
+Auditorium 3 | Air Conditioner | READY
+Auditorium 4 | Projector | READY
+Auditorium 4 | Sound | READY
+Auditorium 4 | Air Conditioner | READY
+Auditorium 5 | Projector | READY
+Auditorium 5 | Sound | READY
+Auditorium 5 | Air Conditioner | READY
+Auditorium 6 | Projector | READY
+Auditorium 6 | Sound | READY
+Auditorium 6 | Air Conditioner | READY
+Auditorium 7 | Projector | READY
+Auditorium 7 | Sound | READY
+Auditorium 7 | Air Conditioner | READY
+Auditorium 8 | Projector | READY
+Auditorium 8 | Sound | READY
+Auditorium 8 | Air Conditioner | READY

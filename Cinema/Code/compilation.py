@@ -123,7 +123,7 @@ def view_bookings():
     print("=" * 40)
 
 
-def make_booking():
+def book_ticket():
     """Book a new ticket"""
     print("\n========== BOOK TICKET ==========")
 
@@ -333,7 +333,7 @@ def main_ticketing_clerk():
         elif choice == "3":
             view_showtimes()
         elif choice == "4":
-            make_booking()
+            book_ticket()
         elif choice == "5":
             view_bookings()
         elif choice == "6":
@@ -345,6 +345,7 @@ def main_ticketing_clerk():
             print("ERROR: Choose 1-7")
 
         input("\nPress Enter...")
+
 
 
 
@@ -1766,6 +1767,20 @@ def main_cinema_manager():
         action_choice = validate_int("Select action (enter number 1-17): ")
         if action_choice in action_functions:
             break
+        print(color_error_message("Invalid input: please enter a number 1-17."))
+    confirmed = validate_yes_no(
+        f'Confirm action: {actions[action_choice - 1].lower()}? [Y/N]: ') == "Y"
+    if confirmed:
+        clear_terminal()
+        action_functions[action_choice]()
+    else:
+        clear_terminal()
+        main_cinema_manager()
+
+    while True:
+        action_choice = validate_int("Select action (enter number 1-17): ")
+        if action_choice in action_functions:
+            break
         print("Invalid input: please enter a number 1-17.")
     confirmed = validate_yes_no(
         f'Confirm action: {actions[action_choice - 1].lower()}? [Y/N]: ') == "Y"
@@ -1780,31 +1795,16 @@ def main_cinema_manager():
 
 
 
-
-
-
-def load_movies(filename=r"Cinema/Database/movie_listings.txt"):
+def load_movie(filename=r"Cinema/Database/movie_listings.txt"):
     movies = []
     try:
         with open(filename, "r", encoding="utf-8") as f:
-            next(f)
-            for line in f:
-                parts = [p.strip().strip('"') for p in line.split(",")]
-                # protect against malformed lines
-                if len(parts) < 11:
+            lines = f.readlines()
+            for line in lines:
+                if not line.strip():
                     continue
                 movie = {
-                    "movie_id": parts[0],
-                    "movie_name": parts[1],
-                    "release_date": parts[2],
-                    "running_time": parts[3],
-                    "genre": parts[4],
-                    "classification": parts[5],
-                    "spoken_language": parts[6],
-                    "subtitle_language": parts[7],
-                    "director": parts[8],
-                    "casts": parts[9],
-                    "description": parts[10]
+                    "movie_data": line  # keep raw text
                 }
                 movies.append(movie)
     except FileNotFoundError:
@@ -1817,25 +1817,39 @@ def display_movies(movies):
         print("⚠️ No movies available.")
         return
 
-    print("\n🎬 --- Movie Listings --- 🎬")
-    for m in movies:
-        print(f"""
-ID: {m['movie_id']}
-Name: {m['movie_name']}
-Release Date: {m['release_date']}
-Running Time: {m['running_time']} min
-Genre: {m['genre']}
-Classification: {m['classification']}
-Language: {m['spoken_language']} (Subtitles: {m['subtitle_language']})
-Director: {m['director']}
-Casts: {m['casts']}
-Description: {m['description']}
-""")
-    print("------------------------------------------------------")
+    print("\n🎬==============================================🎬")
+    print("                 MOVIE  LISTINGS")
+    print("==============================================")
 
+    for i, m in enumerate(movies, start=1):
+        print(f"\n🎞️  Movie #{i}")
+        print("--------------------------------------------------")
+
+        # Replace commas with newlines for easy reading
+        formatted = m["movie_data"].replace(",", "\n")
+
+        # Add simple labels for clarity
+        print(f"""
+Movie ID      : {formatted.splitlines()[0]}
+Movie Name    : {formatted.splitlines()[1]}
+Release Date  : {formatted.splitlines()[2]}
+Running Time  : {formatted.splitlines()[3]} minutes
+Genre         : {formatted.splitlines()[4]}
+Classification: {formatted.splitlines()[5]}
+Language      : {formatted.splitlines()[6]}
+Subtitles     : {formatted.splitlines()[7]}
+Director      : {formatted.splitlines()[8]}
+Casts         : {formatted.splitlines()[9]}
+Description   : {formatted.splitlines()[10]}
+""")
+
+        print("--------------------------------------------------")
+
+    print("\n✅ End of Movie List")
+    print("🎬==============================================🎬")
 
 # ================== ISSUES (robust, deduped) ==================
-ISSUES_FILE = "Cinema\Database\issues.txt"
+ISSUES_FILE = "issues.txt"
 AUDITORIUMS = [f"Auditorium {i}" for i in range(1, 9)]
 EQUIPMENT_LIST = ["Projector", "Sound", "Air Conditioner"]
 
@@ -1982,7 +1996,7 @@ def reset_all_equipment():
     auditoriums = [f"Auditorium {i}" for i in range(1, 9)]
     equipment_list = ["Projector", "Sound", "Air Conditioner"]
 
-    with open(ISSUES_FILE, "w", encoding="utf-8") as f:
+    with open("issues.txt", "w", encoding="utf-8") as f:
         for auditorium in auditoriums:
             for equipment in equipment_list:
                 f.write(f"{auditorium} | {equipment} | READY\n")
@@ -2002,7 +2016,7 @@ def main_technician():
 
         choice = input("Enter choice (1-6): ")
         if choice == "1":
-            movies = load_movies()
+            movies = load_movie()
             display_movies(movies)
         elif choice == "2":
             report_issue()
@@ -2017,12 +2031,6 @@ def main_technician():
             main()
         else:
             print("!! Invalid Choice, Please Use 1 2 3 ... Format !!")
-
-
-
-
-
-
 
 
 
@@ -2471,7 +2479,6 @@ def main_customer():                                                            
 
 
 
-# MAIN MENU
 def main():
     """
     Displays the main menu and dispatches to role-specific interfaces.
@@ -2480,12 +2487,12 @@ def main():
         None
     """
     clear_terminal()
-    print("==== MAIN MENU ====\n\nAvailable role:\n------------------")
+    print("==== MAIN MENU ====\n\nAvailable role:\n-------------------")
     roles = ["Ticketing Clerk", "Cinema Manager", "Technician", "Customer"]
 
     for index, role in enumerate(roles, start=1):
         print(f'[{index}] {role}')
-    print("------------------")
+    print("-------------------")
 
     role_functions = {
         1: main_ticketing_clerk,
@@ -2498,7 +2505,7 @@ def main():
         role_choice = validate_int("Select role (enter number 1-4): ")
         if role_choice in role_functions:
             break
-        print("Invalid input: please enter a number 1-4.")
+        print(color_error_message("Invalid input: please enter a number 1-4."))
     confirmed = validate_yes_no(
         f'Confirm role: {roles[role_choice - 1].lower()}? [Y/N]: ') == "Y"
     if confirmed:
