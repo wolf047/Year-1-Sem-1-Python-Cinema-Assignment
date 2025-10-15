@@ -603,7 +603,7 @@ def main_customer():                                                      # main
         elif choice == 6: view_booking_history()                         # run history
         elif choice == 0:                                                 # exit
             print("Goodbye!")                                            # goodbye text
-            # main()
+            main()
             break                                                        # leave the loop and end program
         else:
             print("Invalid choice. Try again.")                          # anything else -> errors then loop

@@ -1,5 +1,5 @@
 customer_id, name, phone, email, password
-C0001, Aisyah Rahman, 60123456780, aisyah.rahman@example.com, psstttttt
+C0001, Aisyah Rahman, 60123456780, aisyah.rahman@example.com, 123
 C0002, John, 60163482797, haihang@gmail.com, Haihang
 C0003, Raj Kumar, 60134567891, raj.kumar@example.com, p@ss
 C0004, Lim Wei, 60111222333, lim.wei@example.com, 1234
@@ -11,3 +11,4 @@ C0009, Chloe Tan, 60166778899, chloe.tan@example.com, iLikeM0vies
 C0010, Arjun Singh, 60134566778, arjun.singh@example.com, arjunnnnn
 C0011, Sascha, 60179228873, sascha007@gmail.com, whitefang
 C0012, bryan, 60163482797, bryan@gmail.com, pass1
+C0013, Ian, 601234567, ian123@gmail.com, ian1

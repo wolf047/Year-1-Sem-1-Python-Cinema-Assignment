@@ -188,16 +188,19 @@ def add_entry(filename, entry_detail_list):
     Returns:
         None
     """
-    with open(filename, "r") as f:
-        first_line = f.readline()
-        single_line = not first_line.endswith("\n")
-    with open(filename, "a") as f:
-        if single_line:
-            f.write("\n")
-        formatted_entry = []
-        for item in entry_detail_list:
-            formatted_entry.append(lint_item(item))
-        f.write(", ".join(formatted_entry) + "\n")
+    try:
+        with open(filename, "r") as f:
+            first_line = f.readline()
+            single_line = not first_line.endswith("\n")
+        with open(filename, "a") as f:
+            if single_line:
+                f.write("\n")
+            formatted_entry = []
+            for item in entry_detail_list:
+                formatted_entry.append(lint_item(item))
+            f.write(", ".join(formatted_entry) + "\n")
+    except FileNotFoundError:
+        print(color_error_message(f'Error: {filename} file not found.'))
 
 
 def update_entry(filename, entry_id, detail_index, entry_detail_item):
@@ -213,16 +216,19 @@ def update_entry(filename, entry_id, detail_index, entry_detail_item):
     Returns:
         None
     """
-    with open(filename, "r") as f:
-        entries = f.readlines()
-        updated_entries = []
-        for entry in entries:
-            entry = [i.strip() for i in entry.split(",")]
-            if entry[0] == entry_id:
-                entry[detail_index] = lint_item(entry_detail_item)
-            updated_entries.append(", ".join(entry) + "\n")
-    with open(filename, "w") as f:
-        f.writelines(updated_entries)
+    try:
+        with open(filename, "r") as f:
+            entries = f.readlines()
+            updated_entries = []
+            for entry in entries:
+                entry = [i.strip() for i in entry.split(",")]
+                if entry[0] == entry_id:
+                    entry[detail_index] = lint_item(entry_detail_item)
+                updated_entries.append(", ".join(entry) + "\n")
+        with open(filename, "w") as f:
+            f.writelines(updated_entries)
+    except FileNotFoundError:
+        print(color_error_message(f'Error: {filename} file not found.'))
 
 
 def remove_entry(filename, entry_id):
@@ -236,15 +242,18 @@ def remove_entry(filename, entry_id):
     Returns:
         None
     """
-    with open(filename, "r") as f:
-        entries = f.readlines()
-        updated_entries = []
-        for entry in entries:
-            entry = [i.strip() for i in entry.split(",")]
-            if entry[0] != entry_id:
-                updated_entries.append(", ".join(entry) + "\n")
-    with open(filename, "w") as f:
-        f.writelines(updated_entries)
+    try: 
+        with open(filename, "r") as f:
+            entries = f.readlines()
+            updated_entries = []
+            for entry in entries:
+                entry = [i.strip() for i in entry.split(",")]
+                if entry[0] != entry_id:
+                    updated_entries.append(", ".join(entry) + "\n")
+        with open(filename, "w") as f:
+            f.writelines(updated_entries)
+    except FileNotFoundError:
+        print(color_error_message(f'Error: {filename} file not found.'))
 
 
 def view_all_entries(filename):
@@ -257,17 +266,20 @@ def view_all_entries(filename):
     Returns:
         None
     """
-    with open(filename, "r") as f:
-        header = f.readline().upper()
-        print(header, end="")
-        print("-" * len(header))
-        entries = f.readlines()
-        if not entries:
-            print("No entries found.")
-        else:
-            for entry in entries:
-                print(entry, end="")
-            print("\n")
+    try:
+        with open(filename, "r") as f:
+            header = f.readline().upper()
+            print(header, end="")
+            print("-" * len(header))
+            entries = f.readlines()
+            if not entries:
+                print("No entries found.")
+            else:
+                for entry in entries:
+                    print(entry, end="")
+                print("\n")
+    except FileNotFoundError:
+        print(color_error_message(f'Error: {filename} file not found.'))
 
 
 def lookup_entry(filename, entry_id="", header=0):
@@ -282,15 +294,18 @@ def lookup_entry(filename, entry_id="", header=0):
     Returns:
         list or None: Header or matching entry, or None if not found.
     """
-    with open(filename, "r") as f:
-        if header:
-            details = [detail.strip() for detail in f.readline().split(",")]
-            return details
-        for line in f:
-            entry = [i.strip() for i in split_line(line)]
-            if entry[0] == entry_id:
-                return entry
-    return None
+    try: 
+        with open(filename, "r") as f:
+            if header:
+                details = [detail.strip() for detail in f.readline().split(",")]
+                return details
+            for line in f:
+                entry = [i.strip() for i in split_line(line)]
+                if entry[0] == entry_id:
+                    return entry
+        return None
+    except FileNotFoundError:
+        print(color_error_message(f'Error: {filename} file not found.'))
 
 
 def split_line(line):
@@ -644,11 +659,14 @@ def add_showtime():
     end_time = datetime.strftime(parsed_end_time, "%H%M")
     same_day_showtimes = []
     same_time_showtimes = []
-    with open("Cinema/Database/movie_showtimes.txt", "r") as f:
-        for line in f:
-            entry = [i.strip() for i in line.split(",")]
-            if entry[3] == date:
-                same_day_showtimes.append(entry)
+    try:
+        with open("Cinema/Database/movie_showtimes.txt", "r") as f:
+            for line in f:
+                entry = [i.strip() for i in line.split(",")]
+                if entry[3] == date:
+                    same_day_showtimes.append(entry)
+    except FileNotFoundError:
+        print(color_error_message(f'Error: "Cinema/Database/movie_showtimes.txt" file not found.'))
     for showtime in same_day_showtimes:
         existing_start_time = datetime.strptime(showtime[4], "%H%M")
         existing_end_time = datetime.strptime(showtime[5], "%H%M")
@@ -759,11 +777,14 @@ def update_showtime():
         end_time = datetime.strftime(parsed_end_time, "%H%M")
         same_day_showtimes = []
         same_time_showtimes = []
-        with open("Cinema/Database/movie_showtimes.txt", "r") as f:
-            for line in f:
-                entry = [i.strip() for i in line.split(",")]
-                if entry[3] == date:
-                    same_day_showtimes.append(entry)
+        try:
+            with open("Cinema/Database/movie_showtimes.txt", "r") as f:
+                for line in f:
+                    entry = [i.strip() for i in line.split(",")]
+                    if entry[3] == date:
+                        same_day_showtimes.append(entry)
+        except FileNotFoundError:
+            print(color_error_message(f'Error: "Cinema/Database/movie_showtimes.txt" file not found.'))
         for showtime in same_day_showtimes:
             existing_start_time = datetime.strptime(showtime[4], "%H%M")
             existing_end_time = datetime.strptime(showtime[5], "%H%M")
@@ -1141,14 +1162,17 @@ def update_discount():
                 update_entry("Cinema/Database/discount_policies.txt",
                         discount_id, detail_selection, update_details)
             
-        with open("Cinema/Database/movie_showtimes.txt", "r") as f:
-            for line in f:
-                showtime = [i.strip() for i in line.split(",")]
-                if len(showtime) == 9:
-                    if showtime[8] == discount_id:
-                        normal_price = showtime[6]
-                        discounted_price = calculate_discount(discount_id, normal_price)
-                        update_entry("Cinema/Database/movie_showtimes.txt", showtime[0], 7, discounted_price)
+        try:
+            with open("Cinema/Database/movie_showtimes.txt", "r") as f:
+                for line in f:
+                    showtime = [i.strip() for i in line.split(",")]
+                    if len(showtime) == 9:
+                        if showtime[8] == discount_id:
+                            normal_price = showtime[6]
+                            discounted_price = calculate_discount(discount_id, normal_price)
+                            update_entry("Cinema/Database/movie_showtimes.txt", showtime[0], 7, discounted_price)
+        except FileNotFoundError:
+            print(color_error_message(f'Error: "Cinema/Database/movie_showtimes.txt" file not found.'))
         
         notification = f'SUCCESS: Discount {discount_id} for {lookup_entry("Cinema/Database/discount_policies.txt", entry_id=discount_id)[1]} updated.'
         print("-" * len(notification))
@@ -1274,8 +1298,12 @@ def view_booking_reports():
     specific_movie = validate_yes_no("View the report for a specific movie? [Y/N] ") == "Y"
     clear_terminal()
     entries = []
-    with open("Cinema/Database/movie_bookings.txt", "r") as f:
-        header = f.readline().upper()
+    try:
+        with open("Cinema/Database/movie_bookings.txt", "r") as f:
+            header = f.readline().upper()
+    except FileNotFoundError:
+        print(color_error_message(f'Error: "Cinema/Database/movie_bookings.txt" file not found.'))
+        
     header = [i.strip() for i in header.split(",")]
     header.insert(1, "MOVIE_NAME")
     header.insert(2, "DATE")
@@ -1284,42 +1312,57 @@ def view_booking_reports():
 
     if specific_movie:
         movie_id = input("Enter movie ID: ").upper().strip()
-        with open("Cinema/Database/movie_showtimes.txt", "r") as f:
-            for showtime_line in f:
-                showtime_entry = [i.strip() for i in showtime_line.split(",")]
-                if showtime_entry[1] == movie_id:
-                    with open("Cinema/Database/movie_bookings.txt", "r") as g:
-                        for booking_line in g:
-                            entry = [i.strip() for i in booking_line.split(",")]
-                            if entry[1] == showtime_entry[0]:
-                                entries.append(", ".join(entry) + "\n")
+        try:
+            with open("Cinema/Database/movie_showtimes.txt", "r") as f:
+                for showtime_line in f:
+                    showtime_entry = [i.strip() for i in showtime_line.split(",")]
+                    if showtime_entry[1] == movie_id:
+                        try:
+                            with open("Cinema/Database/movie_bookings.txt", "r") as g:
+                                for booking_line in g:
+                                    entry = [i.strip() for i in booking_line.split(",")]
+                                    if entry[1] == showtime_entry[0]:
+                                        entries.append(", ".join(entry) + "\n")
+                        except FileNotFoundError:
+                            print(color_error_message(f'Error: "Cinema/Database/movie_bookings.txt" file not found.'))
+        except FileNotFoundError:
+            print(color_error_message(f'Error: "Cinema/Database/movie_showtimes.txt" file not found.'))
 
     else:
-        with open("Cinema/Database/movie_bookings.txt", "r") as f:
-            next(f)
-            entries = f.readlines()
+        try:
+            with open("Cinema/Database/movie_bookings.txt", "r") as f:
+                next(f)
+                entries = f.readlines()
+        except FileNotFoundError:
+            print(color_error_message(f'Error: "Cinema/Database/movie_bookings.txt" file not found.'))
             
     booking_info = []
     
     for booking in entries:
         booking = [i.strip() for i in booking.split(",")]
         showtime_id = booking[1]
-        with open("Cinema/Database/movie_showtimes.txt", "r") as f:
-            for showtime_line in f:
-                showtime_entry = [i.strip() for i in showtime_line.split(",")]
-                if showtime_entry[0] == showtime_id:
-                    movie_id = showtime_entry[1]
-                    with open("Cinema/Database/movie_listings.txt", "r") as g:
-                        for movie_line in g:
-                            movie_entry = [i.strip() for i in movie_line.split(",")] 
-                            if movie_entry[0] == movie_id:
-                                movie_name = movie_entry[1]
-                                booking.insert(1, movie_name)
-                    date = showtime_entry[3]
-                    start_time = showtime_entry[4]
-                    booking.insert(2, date)
-                    booking.insert(3, start_time)
-                    booking_info.append(booking)
+        try:
+            with open("Cinema/Database/movie_showtimes.txt", "r") as f:
+                for showtime_line in f:
+                    showtime_entry = [i.strip() for i in showtime_line.split(",")]
+                    if showtime_entry[0] == showtime_id:
+                        movie_id = showtime_entry[1]
+                        try:
+                            with open("Cinema/Database/movie_listings.txt", "r") as g:
+                                for movie_line in g:
+                                    movie_entry = [i.strip() for i in movie_line.split(",")] 
+                                    if movie_entry[0] == movie_id:
+                                        movie_name = movie_entry[1]
+                                        booking.insert(1, movie_name)
+                            date = showtime_entry[3]
+                            start_time = showtime_entry[4]
+                            booking.insert(2, date)
+                            booking.insert(3, start_time)
+                            booking_info.append(booking)
+                        except FileNotFoundError:
+                            print(color_error_message(f'Error: "Cinema/Database/movie_listings.txt" file not found.'))
+        except FileNotFoundError:
+            print(color_error_message(f'Error: "Cinema/Database/movie_showtimes.txt" file not found.'))
                     
     booking_info = [", ".join(item) for item in booking_info]
     print(header)
@@ -1347,21 +1390,24 @@ def view_revenue_summary():
     """
     normal_total_revenue = 0
     discounted_total_revenue = 0
-    with open("Cinema/Database/movie_bookings.txt", "r") as f:
-        next(f)
-        for line in f:
-            booking = [i.strip() for i in line.split(",")]
-            tickets = [int(i.strip()) for i in booking[4].split("|")]
-            showtime_id = booking[1]
-            movie_showtime = lookup_entry("Cinema/Database/movie_showtimes.txt", entry_id=showtime_id)
-            if not movie_showtime:
-                normal_price = 0
-                discounted_price = 0
-            else:
-                normal_price = float(movie_showtime[6])
-                discounted_price = float(movie_showtime[7]) if movie_showtime[7] else 0.00
-            normal_total_revenue += round((tickets[0] * normal_price), 2)
-            discounted_total_revenue += round((tickets[1] * discounted_price), 2)
+    try:
+        with open("Cinema/Database/movie_bookings.txt", "r") as f:
+            next(f)
+            for line in f:
+                booking = [i.strip() for i in line.split(",")]
+                tickets = [int(i.strip()) for i in booking[4].split("|")]
+                showtime_id = booking[1]
+                movie_showtime = lookup_entry("Cinema/Database/movie_showtimes.txt", entry_id=showtime_id)
+                if not movie_showtime:
+                    normal_price = 0
+                    discounted_price = 0
+                else:
+                    normal_price = float(movie_showtime[6])
+                    discounted_price = float(movie_showtime[7]) if movie_showtime[7] else 0.00
+                normal_total_revenue += round((tickets[0] * normal_price), 2)
+                discounted_total_revenue += round((tickets[1] * discounted_price), 2)
+    except FileNotFoundError:
+        print(color_error_message(f'Error: "Cinema/Database/movie_bookings.txt" file not found.'))
 
     total_revenue = normal_total_revenue + discounted_total_revenue
     print(f'REVENUE FROM NORMAL TICKETS: {normal_total_revenue:.2f}')

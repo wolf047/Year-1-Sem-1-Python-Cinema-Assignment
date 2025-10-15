@@ -1,0 +1,7 @@
+auditorium_id, equipment, status, estimated_repair_date, estimated_repair_time
+AUD1, Projector, Ready, , 
+AUD1, Audio, Ready, , 
+AUD1, "Air Conditioning", Ready, , 
+AUD2, Projector, "Under Maintenance", 17-10-2025, 0800
+AUD2, Audio, Ready, , 
+AUD2, "Air Conditioning", Ready, , 
