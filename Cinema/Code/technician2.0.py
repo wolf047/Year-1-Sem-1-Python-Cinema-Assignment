@@ -28,10 +28,8 @@ def display_movies(movies):
         print(f"\n🎞️  Movie #{i}")
         print("--------------------------------------------------")
 
-        # Replace commas with newlines for easy reading
         formatted = m["movie_data"].replace(",", "\n")
 
-        # Add simple labels for clarity
         print(f"""
 Movie ID      : {formatted.splitlines()[0]}
 Movie Name    : {formatted.splitlines()[1]}
@@ -51,50 +49,52 @@ Description   : {formatted.splitlines()[10]}
     print("\n✅ End of Movie List")
     print("🎬==============================================🎬")
 
-# ================== ISSUES (robust, deduped) ==================
-ISSUES_FILE = "issues.txt"
-AUDITORIUMS = [f"Auditorium {i}" for i in range(1, 9)]
-EQUIPMENT_LIST = ["Projector", "Sound", "Air Conditioner"]
+
+# ================== ISSUES ==================
+ISSUES_FILE = r"Cinema/Database/technician_issues.txt"
+
+# ensure path & file exist
+import os
+os.makedirs(os.path.dirname(ISSUES_FILE), exist_ok=True)
+if not os.path.exists(ISSUES_FILE):
+    with open(ISSUES_FILE, "w", encoding="utf-8") as f:
+        f.write("auditorium_id, equipment, status, estimated_repair_date, estimated_repaired_date\n")
+
+AUDITORIUMS = [f"AUD0{i}" for i in range(1, 9)]
+EQUIPMENT_LIST = ["Projector", "Audio", "Air Conditioning"]
 
 
 def load_issues(filename=ISSUES_FILE):
-    """
-    Load issues.txt into a dict keyed by (auditorium, equipment) -> status.
-    Last occurrence in file wins (but usually file will be written by save_issues,
-    so each pair appears once).
-    """
     issues = {}
     try:
         with open(filename, "r", encoding="utf-8") as f:
             for line in f:
-                line = line.strip()
-                if not line:
+                if not line.strip() or line.startswith("auditorium_id"):
                     continue
-                # split by '|' into at most 3 parts
-                parts = [p.strip() for p in line.split("|", 2)]
-                if len(parts) < 3:
+                parts = [p.strip() for p in line.split(",")]
+                if len(parts) < 5:
                     continue
-                aud, equip, status = parts[0], parts[1], parts[2]
-                issues[(aud, equip)] = status
+                aud, equip, status, est_repair, est_done = parts
+                issues[(aud, equip)] = {
+                    "status": status,
+                    "est_repair": est_repair,
+                    "est_done": est_done
+                }
     except FileNotFoundError:
-        # no file yet -> return empty dict
         pass
     return issues
 
 
+
 def save_issues(issues, filename=ISSUES_FILE):
-    """
-    Save the issues dict to file (one canonical line per pair).
-    """
+    print("Saving")
     with open(filename, "w", encoding="utf-8") as f:
-        # sort for stable ordering (optional)
-        for (aud, equip), status in sorted(issues.items()):
-            f.write(f"{aud} | {equip} | {status}\n")
+        f.write("auditorium_id, equipment, status, estimated_repair_date, estimated_repaired_date\n")
+        for x, data in sorted(issues.items()):
+            f.write(f"{x[0]}, {x[1]}, {data['status']}, {data['est_repair']}, {data['est_done']}\n")
 
 
-# ----- action: report new issue (set Under Maintenance) -----
 def report_issue():
-    # Auditorium selection
     print("\nSelect Auditorium:")
     for i, a in enumerate(AUDITORIUMS, 1):
         print(f"{i}. {a}")
@@ -105,7 +105,6 @@ def report_issue():
         print("⚠️ Invalid choice. Returning to menu.")
         return
 
-    # Equipment selection
     print("\nSelect Equipment:")
     for i, e in enumerate(EQUIPMENT_LIST, 1):
         print(f"{i}. {e}")
@@ -116,17 +115,62 @@ def report_issue():
         print("⚠️ Invalid choice. Returning to menu.")
         return
 
-    # Load, update, save (this prevents duplicate lines)
+    print("\n🛠 Enter estimated repair start date (DD-MM-YYYY):")
+    date = input("   Date: ").strip()
+    print("🕐 Enter start time (e.g. 08:00 AM):")
+    time = input("   Time: ").strip()
+    print("⏱ Enter estimated time needed (e.g. 2h 30m):")
+    duration = input("   Duration: ").strip()
+
+    if "-" not in date or len(date.split("-")) != 3:
+        print("⚠️ Invalid date format (use DD-MM-YYYY).")
+        return
+    if "AM" not in time.upper() and "PM" not in time.upper():
+        print("⚠️ Invalid time format (must include AM/PM).")
+        return
+
+    try:
+        hour, minute = time.split(":")
+        minute, ampm = minute.split(" ")
+        hour = int(hour)
+        minute = int(minute)
+        ampm = ampm.upper()
+        if ampm == "PM" and hour != 12:
+            hour += 12
+        if ampm == "AM" and hour == 12:
+            hour = 0
+        total_start = hour * 60 + minute
+        hrs = 0
+        mins = 0
+        if "h" in duration:
+            hrs = int(duration.split("h")[0].strip())
+        if "m" in duration:
+            after_h = duration.split("h")[-1]
+            if "m" in after_h:
+                mins = int(after_h.replace("m", "").strip() or 0)
+        total_end = total_start + hrs * 60 + mins
+        end_hour = (total_end // 60) % 24
+        end_min = total_end % 60
+        end_ampm = "AM" if end_hour < 12 else "PM"
+        display_hour = end_hour if 1 <= end_hour <= 12 else (12 if end_hour == 0 or end_hour == 12 else end_hour - 12)
+        end_time = f"{display_hour:02d}:{end_min:02d} {end_ampm}"
+    except:
+        print("⚠️ Invalid time or duration format.")
+        return
+
     issues = load_issues()
-    issues[(auditorium, equipment)] = "Under Maintenance"
+    issues[(auditorium, equipment)] = {
+        "status": "Under Maintenance",
+        "est_repair": f"{date} {time}",
+        "est_done": f"{date} {end_time}"
+    }
     save_issues(issues)
-    print(
-        f"✅ Issue reported successfully: {auditorium} - {equipment} (Under Maintenance)")
+
+    print(f"✅ Issue reported successfully: {auditorium} - {equipment}")
+    print(f"   Estimated completion: {date} {end_time}")
 
 
-# ----- view-only: show current equipment status for a chosen auditorium -----
 def confirm_readiness():
-    # (kept the old function name since it's option 3 in your menu)
     print("\nSelect Auditorium to view status:")
     for i, a in enumerate(AUDITORIUMS, 1):
         print(f"{i}. {a}")
@@ -137,23 +181,24 @@ def confirm_readiness():
         print("⚠️ Invalid choice. Returning to menu.")
         return
 
-    issues = load_issues()  # dict
+    issues = load_issues()
     print(f"\n📋 Current equipment status for {auditorium}:")
     found_any = False
-    # show all equipment types with status (default "No record")
     for equip in EQUIPMENT_LIST:
-        status = issues.get((auditorium, equip), None)
-        if status is None:
-            print(f"   {equip}: READY ")
-        else:
-            print(f"   {equip}: {status}")
+        data = issues.get((auditorium, equip))
+        if data:
+            print(f"   {equip}: {data['status']}")
+            if data['status'] == "Under Maintenance":
+                print(f"      Estimated Start: {data['est_repair']}")
+                print(f"      Estimated Done : {data['est_done']}")
             found_any = True
+        else:
+            print(f"   {equip}: READY")
 
     if not found_any:
         print("   (No recorded statuses yet for this auditorium.)")
 
 
-# ----- resolve: set a specific equipment to Resolved -----
 def mark_resolved():
     print("\nSelect Auditorium:")
     for i, a in enumerate(AUDITORIUMS, 1):
@@ -178,35 +223,29 @@ def mark_resolved():
     issues = load_issues()
     key = (auditorium, equipment)
     if key in issues:
-        if issues[key] == "Under Maintenance":
-            issues[key] = "READY"
+        if issues[key]["status"] == "Under Maintenance":
+            issues[key]["status"] = "READY"
             save_issues(issues)
             print(f"✅ Issue resolved: {auditorium} - {equipment}")
-        elif issues[key] == "READY":
-            print(
-                f"ℹ️ Equipment already marked READY: {auditorium} - {equipment}")
+        elif issues[key]["status"] == "READY":
+            print(f"ℹ️ Equipment already marked READY: {auditorium} - {equipment}")
         else:
-            # if it was "OK" or other status, still update if you want:
-            issues[key] = "READY"
+            issues[key]["status"] = "READY"
             save_issues(issues)
-            print(
-                f"✅ Status updated to READY for {auditorium} - {equipment}")
+            print(f"✅ Status updated to READY for {auditorium} - {equipment}")
     else:
         print("⚠️ No record found for that auditorium/equipment. Nothing to resolve.")
 
+
 def reset_all_equipment():
-    # Auditorium and equipment setup
-    auditoriums = [f"Auditorium {i}" for i in range(1, 9)]
-    equipment_list = ["Projector", "Sound", "Air Conditioner"]
-
-    with open("issues.txt", "w", encoding="utf-8") as f:
-        for auditorium in auditoriums:
-            for equipment in equipment_list:
-                f.write(f"{auditorium} | {equipment} | READY\n")
-
+    with open(ISSUES_FILE, "w", encoding="utf-8") as f:
+        f.write("auditorium_id, equipment, status, estimated_repair_date, estimated_repaired_date\n")
+        for i in range(1, 9):
+            for e in EQUIPMENT_LIST:
+                f.write(f"AUD{i}, {e}, READY, , \n")
     print("🔄 All equipment has been reset to READY.")
 
-# ================== MAIN MENU ==================
+
 def main_technician():
     while True:
         print("\n===== 🎥 Cinema Technician System =====")
@@ -224,14 +263,16 @@ def main_technician():
         elif choice == "2":
             report_issue()
         elif choice == "3":
-            confirm_readiness()   # view-only now
+            confirm_readiness()
         elif choice == "4":
             mark_resolved()
         elif choice == "5":
             reset_all_equipment()
         elif choice == "6":
             print("👋 Goodbye!")
-            main()
+            break
         else:
             print("!! Invalid Choice, Please Use 1 2 3 ... Format !!")
+
+
 main_technician()
