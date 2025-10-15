@@ -10,6 +10,7 @@ RESET = "\033[0m"
 AUDITORIUM_OPTIONS = ["AUD01", "AUD02", "AUD03", "AUD04", "AUD05", "AUD06", "AUD07", "AUD08"]
 CLASSIFICATION_OPTIONS = ["U", "P12", "13", "16", "18+", "18SG", "18SX"]
 BUFFER = timedelta(minutes=15)
+TIME_NOW = datetime.now()
 
 MOVIE_CONFIRMATION_KEYS = ["Movie Name", "Release Date", "Running Time", "Genre", "Classification", "Spoken language", "Subtitle language", "Directors", "Casts", "Description", "Eligibility for discount"]
 SHOWTIME_CONFIRMATION_KEYS = ["Movie ID", "Auditorium ID", "Date", "Start Time", "End Time", "Normal Price", "Discounted Price", "Discount ID"]
@@ -201,6 +202,7 @@ def add_entry(filename, entry_detail_list):
             f.write(", ".join(formatted_entry) + "\n")
     except FileNotFoundError:
         print(color_error_message(f'Error: {filename} file not found.'))
+        return
 
 
 def update_entry(filename, entry_id, detail_index, entry_detail_item):
@@ -229,6 +231,7 @@ def update_entry(filename, entry_id, detail_index, entry_detail_item):
             f.writelines(updated_entries)
     except FileNotFoundError:
         print(color_error_message(f'Error: {filename} file not found.'))
+        return
 
 
 def remove_entry(filename, entry_id):
@@ -254,6 +257,7 @@ def remove_entry(filename, entry_id):
             f.writelines(updated_entries)
     except FileNotFoundError:
         print(color_error_message(f'Error: {filename} file not found.'))
+        return
 
 
 def view_all_entries(filename):
@@ -280,6 +284,7 @@ def view_all_entries(filename):
                 print("\n")
     except FileNotFoundError:
         print(color_error_message(f'Error: {filename} file not found.'))
+        return None
 
 
 def lookup_entry(filename, entry_id="", header=0):
@@ -306,6 +311,7 @@ def lookup_entry(filename, entry_id="", header=0):
         return None
     except FileNotFoundError:
         print(color_error_message(f'Error: {filename} file not found.'))
+        return None
 
 
 def split_line(line):
@@ -340,8 +346,8 @@ def id_counter(item_counted):
     """
     Retrieves and increments a persistent ID counter for a given item type.
 
-    Reads the current ID value from a text file specific to the item type, increments it, writes the updated value back to the file, and returns the original ID. If the file does not exist, a new one is created and the starting ID is set to 1.
-
+    Reads the current ID value from a text file specific to the item type, increments it, writes the updated value back to the file, and returns the original ID. 
+    
     Args:
         item_counted (str): The name of the item type (e.g., "movie", "showtime") used to locate the counter file.
 
@@ -355,7 +361,32 @@ def id_counter(item_counted):
             content = f.read().strip()
             id_no = int(content) if content else 1
     except FileNotFoundError:
-        id_no = 1
+        if item_counted == "movie":
+            with open("Cinema/Database/movie_listings.txt", "r") as f:
+                lines = f.readlines()
+                if len(lines) != 1:
+                    prev_id_no = int(lines[-1][1:4])
+                    id_no = prev_id_no + 1
+                else:
+                    id_no = 1
+        elif item_counted == "showtime":
+            with open("Cinema/Database/movie_showtimes.txt", "r") as f:
+                lines = f.readlines()
+                if len(lines) != 1:
+                    prev_id_no = int(lines[-1][2:6])
+                    id_no = prev_id_no + 1
+                else:
+                    id_no = 1
+        elif item_counted == "discount":
+            with open("Cinema/Database/discount_policies.txt", "r") as f:
+                lines = f.readlines()
+                if len(lines) != 1:
+                    prev_id_no = int(lines[-1][1:3])
+                    id_no = prev_id_no + 1
+                else:
+                    id_no = 1
+        else:
+            return
     with open(filename, "w") as f:
         f.write(str(id_no + 1))
     return id_no
@@ -652,6 +683,15 @@ def add_showtime():
 
     #CHECK DATE AND TIME FIRST SO CAN CHOOSE AUDI BASED ON AVAILABILITY
     date = validate_date("Enter date (DD-MM-YYYY): ")
+    parsed_date = datetime.strptime(date, "%d-%m-%Y")
+    if parsed_date < TIME_NOW:
+        print(color_error_message("Invalid input: showtime date should not be before today."))
+        tryagain = validate_yes_no("Try again? [Y/N]: ") == "Y"
+        if tryagain:
+            clear_terminal()
+            add_showtime()
+        else:
+            main_cinema_manager()
     duration = timedelta(minutes=int(movie_listing[3]))
     start_time = validate_time("Enter start time (HHMM): ")
     parsed_start_time = datetime.strptime(start_time, "%H%M")
@@ -677,6 +717,11 @@ def add_showtime():
         unavailable_auditorium_id = showtime[2]
         if unavailable_auditorium_id in available_auditoriums:
             available_auditoriums.remove(unavailable_auditorium_id)
+            
+            
+    #Remove under maintenance audis
+    estimated_repair_complete_date = datetime.strptime(xxxx, "%d-%m-%Y")
+    
     if not available_auditoriums:
         print(color_error_message("Unavailable time: no auditoriums are available for this time slot."))
         tryagain = validate_yes_no("Try again? [Y/N]: ") == "Y"
@@ -839,6 +884,17 @@ def update_showtime():
         else:
             main_cinema_manager()
 
+    date = movie_showtime[3]
+    parsed_date = datetime.strptime(date, "%d-%m-%Y")
+    if parsed_date < TIME_NOW:
+        print(color_error_message("Invalid input: past showtimes cannot be updated."))
+        tryagain = validate_yes_no("Try again? [Y/N]: ") == "Y"
+        if tryagain:
+            clear_terminal()
+            update_showtime()
+        else:
+            main_cinema_manager()
+            
     details = lookup_entry("Cinema/Database/movie_showtimes.txt", header=1)
     for index, field in enumerate(details[1:5] + [details[8]], start=1):
         print(f'[{index}] {field}')
@@ -859,19 +915,25 @@ def update_showtime():
                 else:
                     main_cinema_manager()
         case 2:
-            date = movie_showtime[3]
             start_time = movie_showtime[4]
             update_details = check_auditorium_availability(date, start_time, showtime_id)
         case 3:
             date = validate_date("Enter updated date (DD-MM-YYYY): ")
+            parsed_date = datetime.strptime(date, "%d-%m-%Y")
+            if parsed_date < TIME_NOW:
+                print(color_error_message("Invalid input: showtime date should not be before today."))
+                tryagain = validate_yes_no("Try again? [Y/N]: ") == "Y"
+                if tryagain:
+                    clear_terminal()
+                    add_showtime()
+                else:
+                    main_cinema_manager()
             start_time = movie_showtime[4]
             update_details = check_auditorium_availability(date, start_time, showtime_id)
         case 4:
-            date = movie_showtime[3]
             start_time = validate_time("Enter updated start time (HHMM): ")
             update_details = check_auditorium_availability(date, start_time, showtime_id)
         case 5:
-            movie_showtime = lookup_entry("Cinema/Database/movie_showtimes.txt", entry_id=showtime_id)
             movie_id = movie_showtime[1]
             movie_listing = lookup_entry("Cinema/Database/movie_listings.txt", entry_id=movie_id)
             if movie_listing[11] == "Y":
