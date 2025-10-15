@@ -729,11 +729,8 @@ def add_showtime():
                 if entry[2] == "Under Maintenance":   
                     est_repair = entry[4]
                     est_repair_date_time = [i.strip() for i in est_repair.split(" ")]
-                    print(est_repair_date_time)
                     est_repaired_date = est_repair_date_time[0]
-                    print(est_repaired_date)
                     est_repaired_time = est_repair_date_time[1]
-                    print(est_repaired_time)
                     parsed_est_repaired_date = datetime.strptime(est_repaired_date, "%d-%m-%Y")
                     parsed_est_repaired_time = datetime.strptime(est_repaired_time, "%I:%M%p")
                     if parsed_est_repaired_date == parsed_date and parsed_est_repaired_time > parsed_end_time:
@@ -866,6 +863,32 @@ def update_showtime():
             unavailable_auditorium_id = showtime[2]
             if unavailable_auditorium_id in available_auditoriums:
                 available_auditoriums.remove(unavailable_auditorium_id)
+                
+        #Remove under maintenance audis
+        auditoriums_under_maintenance = []
+        try:
+            with open("Cinema/Database/technician_issues.txt", "r") as f:
+                for line in f:
+                    entry = [i.strip() for i in line.split(",")]
+                    print(entry)
+                    if entry[2] == "Under Maintenance":   
+                        est_repair = entry[4]
+                        est_repair_date_time = [i.strip() for i in est_repair.split(" ")]
+                        est_repaired_date = est_repair_date_time[0]
+                        est_repaired_time = est_repair_date_time[1]
+                        parsed_est_repaired_date = datetime.strptime(est_repaired_date, "%d-%m-%Y")
+                        parsed_est_repaired_time = datetime.strptime(est_repaired_time, "%I:%M%p")
+                        if parsed_est_repaired_date == parsed_date and parsed_est_repaired_time > parsed_end_time:
+                            auditoriums_under_maintenance.append(entry)
+                        elif parsed_est_repaired_date > parsed_date:
+                            auditoriums_under_maintenance.append(entry)
+        except FileNotFoundError:
+            print(color_error_message(f'Error: "Cinema/Database/technician_issues.txt" file not found.'))
+        for maintenance in auditoriums_under_maintenance:
+            unavailable_auditorium_id = maintenance[0]
+            if unavailable_auditorium_id in available_auditoriums:
+                available_auditoriums.remove(unavailable_auditorium_id)
+
         if not available_auditoriums:
             print(color_error_message("Unavailable time: no auditoriums are available for this time slot."))
             tryagain = validate_yes_no("Try again? [Y/N]: ") == "Y"
