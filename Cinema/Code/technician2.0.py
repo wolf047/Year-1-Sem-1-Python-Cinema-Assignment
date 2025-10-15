@@ -115,49 +115,67 @@ def report_issue():
         print("⚠️ Invalid choice. Returning to menu.")
         return
 
+    # -------- input section --------
     print("\n🛠 Enter estimated repair start date (DD-MM-YYYY):")
     date = input("   Date: ").strip()
-    print("🕐 Enter start time (e.g. 08:00 AM):")
+    print("🕐 Enter start time (e.g. 08:00AM or 08:00 AM):")
     time = input("   Time: ").strip()
     print("⏱ Enter estimated time needed (e.g. 2h 30m):")
     duration = input("   Duration: ").strip()
 
+    # -------- validation --------
     if "-" not in date or len(date.split("-")) != 3:
         print("⚠️ Invalid date format (use DD-MM-YYYY).")
         return
-    if "AM" not in time.upper() and "PM" not in time.upper():
+    if not any(x in time.upper() for x in ["AM", "PM"]):
         print("⚠️ Invalid time format (must include AM/PM).")
         return
 
+    # -------- calculate end time --------
     try:
-        hour, minute = time.split(":")
-        minute, ampm = minute.split(" ")
+        # Normalize time (allow 8:00AM or 8:00 AM)
+        time = time.upper().replace(" ", "")
+        if "AM" in time:
+            ampm = "AM"
+            t = time.replace("AM", "")
+        else:
+            ampm = "PM"
+            t = time.replace("PM", "")
+        hour, minute = t.split(":")
         hour = int(hour)
         minute = int(minute)
-        ampm = ampm.upper()
+
+        # Convert to 24h
         if ampm == "PM" and hour != 12:
             hour += 12
         if ampm == "AM" and hour == 12:
             hour = 0
+
         total_start = hour * 60 + minute
+
+        # Parse duration
         hrs = 0
         mins = 0
         if "h" in duration:
-            hrs = int(duration.split("h")[0].strip())
+            hrs = int(duration.split("h")[0].strip() or 0)
         if "m" in duration:
             after_h = duration.split("h")[-1]
             if "m" in after_h:
                 mins = int(after_h.replace("m", "").strip() or 0)
+
         total_end = total_start + hrs * 60 + mins
         end_hour = (total_end // 60) % 24
         end_min = total_end % 60
+
+        # Convert back to 12h
         end_ampm = "AM" if end_hour < 12 else "PM"
-        display_hour = end_hour if 1 <= end_hour <= 12 else (12 if end_hour == 0 or end_hour == 12 else end_hour - 12)
-        end_time = f"{display_hour:02d}:{end_min:02d} {end_ampm}"
+        display_hour = end_hour % 12 or 12
+        end_time = f"{display_hour}:{end_min:02d}{end_ampm}"
     except:
         print("⚠️ Invalid time or duration format.")
         return
 
+    # -------- save data --------
     issues = load_issues()
     issues[(auditorium, equipment)] = {
         "status": "Under Maintenance",
@@ -168,7 +186,6 @@ def report_issue():
 
     print(f"✅ Issue reported successfully: {auditorium} - {equipment}")
     print(f"   Estimated completion: {date} {end_time}")
-
 
 def confirm_readiness():
     print("\nSelect Auditorium to view status:")

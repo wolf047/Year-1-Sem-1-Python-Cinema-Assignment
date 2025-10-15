@@ -1,7 +1,7 @@
 auditorium_id, equipment, status, estimated_repair_date, estimated_repaired_date
 AUD01, Air Conditioning, READY, , 
 AUD01, Audio, Under Maintenance, 15-10-2025 09:00 PM, 15-10-2025 12:00 AM
-AUD01, Projector, READY, , 
+AUD01, Projector, Under Maintenance, 19-10-2000 8:00AM, 19-10-2000 6:00AM
 AUD02, Air Conditioning, READY, , 
 AUD02, Audio, Under Maintenance, 14-10-2025 10:00AM, 16-10-2025 10:00AM
 AUD02, Projector, READY, , 
