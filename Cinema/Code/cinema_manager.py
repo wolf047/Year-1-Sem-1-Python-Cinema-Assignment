@@ -681,17 +681,13 @@ def add_showtime():
         else:
             main_cinema_manager()
 
-    #CHECK DATE AND TIME FIRST SO CAN CHOOSE AUDI BASED ON AVAILABILITY
-    date = validate_date("Enter date (DD-MM-YYYY): ")
-    parsed_date = datetime.strptime(date, "%d-%m-%Y")
-    if parsed_date < TIME_NOW:
+    while True:
+        date = validate_date("Enter date (DD-MM-YYYY): ")
+        parsed_date = datetime.strptime(date, "%d-%m-%Y")
+        if parsed_date > TIME_NOW:
+            break
         print(color_error_message("Invalid input: showtime date should not be before today."))
-        tryagain = validate_yes_no("Try again? [Y/N]: ") == "Y"
-        if tryagain:
-            clear_terminal()
-            add_showtime()
-        else:
-            main_cinema_manager()
+       
     duration = timedelta(minutes=int(movie_listing[3]))
     start_time = validate_time("Enter start time (HHMM): ")
     parsed_start_time = datetime.strptime(start_time, "%H%M")
@@ -922,6 +918,7 @@ def update_showtime():
         return update_details
 
 
+
     showtime_id = input("Enter ID of showtime to be edited: ").upper().strip()
     movie_showtime = lookup_entry("Cinema/Database/movie_showtimes.txt", entry_id=showtime_id)
     if not movie_showtime:
@@ -967,16 +964,12 @@ def update_showtime():
             start_time = movie_showtime[4]
             update_details = check_auditorium_availability(date, start_time, showtime_id)
         case 3:
-            date = validate_date("Enter updated date (DD-MM-YYYY): ")
-            parsed_date = datetime.strptime(date, "%d-%m-%Y")
-            if parsed_date < TIME_NOW:
+            while True:
+                date = validate_date("Enter updated date (DD-MM-YYYY): ")
+                parsed_date = datetime.strptime(date, "%d-%m-%Y")
+                if parsed_date > TIME_NOW:
+                    break
                 print(color_error_message("Invalid input: showtime date should not be before today."))
-                tryagain = validate_yes_no("Try again? [Y/N]: ") == "Y"
-                if tryagain:
-                    clear_terminal()
-                    add_showtime()
-                else:
-                    main_cinema_manager()
             start_time = movie_showtime[4]
             update_details = check_auditorium_availability(date, start_time, showtime_id)
         case 4:
@@ -1219,10 +1212,18 @@ def update_discount():
                 discount_type = "fixed"
                 discount_amount = validate_float("Enter updated discount amount (2 decimal float): ")
                 discount_rate = None
+            else:
+                print(color_error_message("Error: current discount type is neither fixed nor percentage."))
+                tryagain = validate_yes_no("Try again? [Y/N]: ") == "Y"
+                if tryagain:
+                    clear_terminal()
+                    update_discount()
+                else:
+                    main_cinema_manager()
             update_details = [discount_type, f'{discount_amount:.2f}' if discount_amount is not None else "", f'{discount_rate:.2f}' if discount_rate is not None else ""]
         case 3:
             if discount_policy[2] != "fixed":
-                print(color_error_message("Invalid selection: discount amount cannot be edited for percentage discounts."))
+                print(color_error_message("Invalid option: discount amount cannot be edited for percentage discounts."))
                 tryagain = validate_yes_no("Try again? [Y/N]: ") == "Y"
                 if tryagain:
                     clear_terminal()
@@ -1234,7 +1235,7 @@ def update_discount():
                 update_details = f'{update_details:.2f}'
         case 4:
             if discount_policy[2] != "percentage":
-                print(color_error_message("Invalid selection: discount rate cannot be edited for fixed discounts."))
+                print(color_error_message("Invalid option: discount rate cannot be edited for fixed discounts."))
                 tryagain = validate_yes_no("Try again? [Y/N]: ") == "Y"
                 if tryagain:
                     clear_terminal()
@@ -1418,7 +1419,7 @@ def view_booking_reports():
     header = [i.strip() for i in header.split(",")]
     header.insert(1, "MOVIE_NAME")
     header.insert(2, "DATE")
-    header.insert(3, "START TIME")
+    header.insert(3, "START_TIME")
     header = ", ".join(header)
 
     if specific_movie:
