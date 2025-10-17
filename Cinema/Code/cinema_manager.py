@@ -738,7 +738,6 @@ def add_showtime():
         if unavailable_auditorium_id in available_auditoriums:
             available_auditoriums.remove(unavailable_auditorium_id)
 
-    
     if not available_auditoriums:
         print(color_error_message("Unavailable time: no auditoriums are available for this time slot."))
         tryagain = validate_yes_no("Try again? [Y/N]: ") == "Y"
