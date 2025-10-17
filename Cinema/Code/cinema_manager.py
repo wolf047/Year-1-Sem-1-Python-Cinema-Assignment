@@ -1596,10 +1596,10 @@ def main():
     print("-------------------")
 
     role_functions = {
-        # 1: main_ticketing_clerk,
+        1: main_ticketing_clerk,
         2: main_cinema_manager,
-        # 3: main_technician,
-        # 4: main_customer,
+        3: main_technician,
+        4: main_customer,
     }
 
     while True:
@@ -1618,7 +1618,6 @@ def main():
 
 
 if __name__ == "__main__":
-    # This code will only run when the script is executed directly (ie. will not run when imported)
     clear_terminal()
     starting_message = "STARTING PROGRAM..."
     for char in starting_message:
