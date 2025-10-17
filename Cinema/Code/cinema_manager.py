@@ -1392,7 +1392,6 @@ def update_price():
             main_cinema_manager()
 
 
-
 def view_booking_reports():
     """
     Displays booking entries, optionally filtered by movie ID.
