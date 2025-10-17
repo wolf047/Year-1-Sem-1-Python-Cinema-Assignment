@@ -713,9 +713,7 @@ def add_showtime():
         unavailable_auditorium_id = showtime[2]
         if unavailable_auditorium_id in available_auditoriums:
             available_auditoriums.remove(unavailable_auditorium_id)
-            
-            
-    #Remove under maintenance audis
+                 
     auditoriums_under_maintenance = []
     try:
         with open("Cinema/Database/technician_issues.txt", "r") as f:
