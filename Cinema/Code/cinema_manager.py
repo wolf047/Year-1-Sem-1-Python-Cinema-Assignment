@@ -914,8 +914,6 @@ def update_showtime():
         update_details = [auditorium_id, end_time, f'{normal_price:.2f}', discounted_price if discounted_price is not None else ""]
         return update_details
 
-
-
     showtime_id = input("Enter ID of showtime to be edited: ").upper().strip()
     movie_showtime = lookup_entry("Cinema/Database/movie_showtimes.txt", entry_id=showtime_id)
     if not movie_showtime:
@@ -1000,7 +998,6 @@ def update_showtime():
         case _:
             print(color_error_message("Invalid option."))
             detail_selection = validate_int("Select detail (enter number 1-5): ")
-
 
     clear_terminal()
     match detail_selection:
