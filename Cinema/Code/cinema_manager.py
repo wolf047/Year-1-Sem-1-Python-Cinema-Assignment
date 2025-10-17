@@ -1131,7 +1131,6 @@ def add_discount():
 
     discount_policy = [discount_name, discount_type, f'{discount_amount:.2f}' if discount_amount is not None else "", f'{discount_rate:.2f}' if discount_rate is not None else "", discount_policies]
     
-    
     clear_terminal()
     for i in range(len(DISCOUNT_CONFIRMATION_KEYS)):
         print(f'{color_confirmation_message(DISCOUNT_CONFIRMATION_KEYS[i])}: {discount_policy[i] if discount_policy[i] != "" else "N/A"}')
