@@ -131,48 +131,56 @@ def report_issue():
         print("⚠️ Invalid time format (must include AM/PM).")
         return
 
-    # -------- calculate end time --------
+# -------- calculate end time --------
     try:
-        # Normalize time (allow 8:00AM or 8:00 AM)
-        time = time.upper().replace(" ", "")
-        if "AM" in time:
-            ampm = "AM"
-            t = time.replace("AM", "")
-        else:
-            ampm = "PM"
-            t = time.replace("PM", "")
-        hour, minute = t.split(":")
-        hour = int(hour)
-        minute = int(minute)
+        from datetime import datetime, timedelta
 
-        # Convert to 24h
-        if ampm == "PM" and hour != 12:
-            hour += 12
-        if ampm == "AM" and hour == 12:
-            hour = 0
+        # --- Validate and parse date ---
+        # Accepts both 10-1-2006 and 10-01-2006
+        try:
+            date_obj = datetime.strptime(date.strip(), "%d-%m-%Y")
+        except ValueError:
+            print("⚠️ Invalid date format or non-existent date (e.g. 30-2-2000).")
+            return
 
-        total_start = hour * 60 + minute
+        # --- Validate and parse time ---
+        # Normalize time input (handle 8:00am / 08:00AM / 8:00 pm)
+        time = time.strip().upper().replace(" ", "")
+        if not any(x in time for x in ["AM", "PM"]):
+            print("⚠️ Please include AM or PM in time (e.g. 8:00AM).")
+            return
 
-        # Parse duration
+        # Try to parse using 12-hour format
+        try:
+            time_obj = datetime.strptime(time, "%I:%M%p")
+        except ValueError:
+            print("⚠️ Invalid time format. Use something like 8:00AM or 08:00PM.")
+            return
+
+        # Combine date and time into one datetime object
+        start_dt = datetime.combine(date_obj.date(), time_obj.time())
+
+        # --- Parse duration ---
+        duration = duration.lower().strip()
         hrs = 0
         mins = 0
         if "h" in duration:
-            hrs = int(duration.split("h")[0].strip() or 0)
+            hrs_part = duration.split("h")[0].strip()
+            hrs = int(hrs_part) if hrs_part.isdigit() else 0
         if "m" in duration:
             after_h = duration.split("h")[-1]
-            if "m" in after_h:
-                mins = int(after_h.replace("m", "").strip() or 0)
+            mins_part = after_h.replace("m", "").strip()
+            mins = int(mins_part) if mins_part.isdigit() else 0
 
-        total_end = total_start + hrs * 60 + mins
-        end_hour = (total_end // 60) % 24
-        end_min = total_end % 60
+        # --- Calculate end time ---
+        end_dt = start_dt + timedelta(hours=hrs, minutes=mins)
 
-        # Convert back to 12h
-        end_ampm = "AM" if end_hour < 12 else "PM"
-        display_hour = end_hour % 12 or 12
-        end_time = f"{display_hour}:{end_min:02d}{end_ampm}"
-    except:
-        print("⚠️ Invalid time or duration format.")
+        # Display in 12-hour format with AM/PM
+        end_time = end_dt.strftime("%I:%M%p").lstrip("0")
+        print(f"✅ End time: {end_time}")
+
+    except Exception as e:
+        print("⚠️ Invalid time, date, or duration format.")
         return
 
     # -------- save data --------
@@ -206,8 +214,8 @@ def confirm_readiness():
         if data:
             print(f"   {equip}: {data['status']}")
             if data['status'] == "Under Maintenance":
-                print(f"      Estimated Start: {data['est_repair']}")
-                print(f"      Estimated Done : {data['est_done']}")
+                print(f"      Estimated Repair Start: {data['est_repair']}")
+                print(f"      Estimated Repair Completion: {data['est_done']}")
             found_any = True
         else:
             print(f"   {equip}: READY")
