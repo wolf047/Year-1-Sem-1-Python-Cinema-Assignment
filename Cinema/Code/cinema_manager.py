@@ -857,7 +857,6 @@ def update_showtime():
             if unavailable_auditorium_id in available_auditoriums:
                 available_auditoriums.remove(unavailable_auditorium_id)
                 
-        #Remove under maintenance audis
         auditoriums_under_maintenance = []
         try:
             with open("Cinema/Database/technician_issues.txt", "r") as f:
@@ -1623,4 +1622,8 @@ if __name__ == "__main__":
     for char in starting_message:
         print(char, end="", flush=True)
         time.sleep(0.1)
+        from COMPILATION import *
     main()
+
+    
+    
