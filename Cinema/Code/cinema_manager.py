@@ -25,7 +25,7 @@ def color_error_message(message):
         message (str): The error message to be colorized.
 
     Returns:
-        str: The error message wrapped with red color and reset codes.
+        colored_message (str): The error message wrapped with red color and reset codes.
     """
     colored_message = RED + message + RESET
     return colored_message
@@ -39,7 +39,7 @@ def color_completion_message(message):
         message (str): The completion message to be colorized.
 
     Returns:
-        str: The completion message wrapped with green color and reset codes.
+        colored_message (str): The completion message wrapped with green color and reset codes.
     """
     colored_message = GREEN + message + RESET
     return colored_message
@@ -53,7 +53,7 @@ def color_confirmation_message(message):
         message (str): The confirmation message to be colorized.
 
     Returns:
-        str: The confirmation message wrapped with blue color and reset codes.
+        colored_message (str): The confirmation message wrapped with blue color and reset codes.
     """
     colored_message = BLUE + message + RESET
     return colored_message
@@ -320,7 +320,7 @@ def split_line(line):
         line (str): The line to be split.
     
     Returns:
-        fields (list): A list of the fields that makes up the line.
+        list: A list of the fields that makes up the line.
     """
     fields = []
     placeholder = ''
@@ -825,7 +825,7 @@ def update_showtime():
             showtime_id (str): The ID of the showtime to be updated.
 
         Returns:
-            update_details (list): A list containing the auditorium ID of the selected auditorium, the end time, the normal price based on the auditorium, and the discounted price based on the normal price and the existing discount ID if the movie is eligible for discount.
+            list: A list containing the auditorium ID of the selected auditorium, the end time, the normal price based on the auditorium, and the discounted price based on the normal price and the existing discount ID if the movie is eligible for discount.
         """
         movie_showtime = lookup_entry("Cinema/Database/movie_showtimes.txt", entry_id=showtime_id)
         movie_id = movie_showtime[1]
