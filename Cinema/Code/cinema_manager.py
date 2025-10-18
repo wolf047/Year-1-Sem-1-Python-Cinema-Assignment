@@ -717,7 +717,6 @@ def add_showtime():
         with open("Cinema/Database/technician_issues.txt", "r") as f:
             for line in f:
                 entry = [i.strip() for i in line.split(",")]
-                print(entry)
                 if entry[2] == "Under Maintenance":   
                     est_repair = entry[4]
                     est_repair_date_time = [i.strip() for i in est_repair.split(" ")]
@@ -1593,10 +1592,10 @@ def main():
     print("-------------------")
 
     role_functions = {
-        1: main_ticketing_clerk,
+        #1: main_ticketing_clerk,
         2: main_cinema_manager,
-        3: main_technician,
-        4: main_customer,
+        #3: main_technician,
+        #4: main_customer,
     }
 
     while True:
@@ -1620,7 +1619,6 @@ if __name__ == "__main__":
     for char in starting_message:
         print(char, end="", flush=True)
         time.sleep(0.1)
-        from COMPILATION import *
     main()
 
     
