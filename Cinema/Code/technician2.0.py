@@ -295,9 +295,9 @@ def main_technician():
             reset_all_equipment()
         elif choice == "6":
             print("👋 Goodbye!")
+            main()
             break
         else:
             print("!! Invalid Choice, Please Use 1 2 3 ... Format !!")
 
 
-main_technician()

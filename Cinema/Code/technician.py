@@ -24,7 +24,8 @@ def display_movies(movies):
     print("                 MOVIE  LISTINGS")
     print("==============================================")
 
-    for i, m in enumerate(movies, start=1):
+    for i, m in 
+    enumerate(movies, start=1):
         print(f"\n🎞️  Movie #{i}")
         print("--------------------------------------------------")
 

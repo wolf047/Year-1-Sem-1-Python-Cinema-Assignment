@@ -514,6 +514,7 @@ def main():
                 cancel_booking()
             elif choice == "7":
                 print("\nGoodbye!")
+                main()
                 break
             else:
                 print("ERROR: Choose 1-7")
@@ -527,6 +528,3 @@ def main():
             print("\nERROR: Something went wrong!")
             input("Press Enter to continue...")
 
-
-if __name__ == "__main__":
-    main()

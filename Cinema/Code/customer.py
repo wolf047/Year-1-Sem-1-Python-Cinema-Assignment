@@ -680,11 +680,8 @@ def main_customer():                                                      # main
         elif choice == 6: view_booking_history()                         # run history
         elif choice == 0:                                                 # exit
             print("Goodbye!")                                            # goodbye text
-            # main()
+            main()
             break                                                        # leave the loop and end program
         else:
             print("Invalid choice. Try again.")                          # anything else -> errors then loop
 
-
-if __name__ == "__main__":                                               # this is True when we press Run on this file
-    main_customer()                                                               # start the program
