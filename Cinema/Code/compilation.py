@@ -1792,10 +1792,10 @@ def main_cinema_manager():
         main_cinema_manager()
 
 
+#------------------Technician------------------
 
 
-
-def load_movie(filename=r"Cinema/Database/movie_listings.txt"):
+def load_movie(filename=r"Cinema\Database\movie_listings.txt"):
     movies = []
     try:
         with open(filename, "r", encoding="utf-8") as f:

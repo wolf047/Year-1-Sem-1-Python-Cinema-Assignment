@@ -2113,16 +2113,17 @@ def load_movies(filename=r"Cinema/Database/movie_listings.txt"):
     movies = []
     try:
         with open(filename, "r", encoding="utf-8") as f:
-            lines = f.readlines()
-            for line in lines:
-                if not line.strip():
+            for line in f:
+                line = line.strip()
+                if not line:
                     continue
-                movie = {
-                    "movie_data": line  # keep raw text
-                }
+                movie = {"movie_datas": line}
                 movies.append(movie)
     except FileNotFoundError:
-        print("⚠️ movie_listing.txt not found! Please put it in Cinema\\Database\\movie_listing.txt or adjust the path.")
+        print("⚠️ movie_listings.txt not found! Please ensure it’s in Cinema\\Database\\movie_listings.txt.")
+    print(f"✅ Loaded {len(movies)} movies.")
+    if movies:
+        print("🔍 First line preview:", movies[0])
     return movies
 
 
@@ -2139,27 +2140,32 @@ def display_movies(movies):
         print(f"\n🎞️  Movie #{i}")
         print("--------------------------------------------------")
 
-        formatted = m["movie_data"].replace(",", "\n")
+        formatted = str(m.get("movie_datas", "")).replace(",", "\n")
+        lines = [x.strip() for x in formatted.splitlines()]
+        print("🔍 DEBUG — split fields:", lines)
+
+        # avoid crash if not enough fields
+        while len(lines) < 11:
+            lines.append("N/A")
 
         print(f"""
-Movie ID      : {formatted.splitlines()[0]}
-Movie Name    : {formatted.splitlines()[1]}
-Release Date  : {formatted.splitlines()[2]}
-Running Time  : {formatted.splitlines()[3]} minutes
-Genre         : {formatted.splitlines()[4]}
-Classification: {formatted.splitlines()[5]}
-Language      : {formatted.splitlines()[6]}
-Subtitles     : {formatted.splitlines()[7]}
-Director      : {formatted.splitlines()[8]}
-Casts         : {formatted.splitlines()[9]}
-Description   : {formatted.splitlines()[10]}
+Movie ID      : {lines[0]}
+Movie Name    : {lines[1]}
+Release Date  : {lines[2]}
+Running Time  : {lines[3]} minutes
+Genre         : {lines[4]}
+Classification: {lines[5]}
+Language      : {lines[6]}
+Subtitles     : {lines[7]}
+Director      : {lines[8]}
+Casts         : {lines[9]}
+Description   : {lines[10]}
 """)
 
         print("--------------------------------------------------")
 
     print("\n✅ End of Movie List")
     print("🎬==============================================🎬")
-
 
 # ================== ISSUES ==================
 ISSUES_FILE = r"Cinema/Database/technician_issues.txt"
@@ -2416,23 +2422,20 @@ def main_technician():
 
 
 #------------------------- CUSTOMER --------------------------------------------------
-try:
-    SCRIPT_DIR = os.path.dirname(__file__)
-except NameError:
-    SCRIPT_DIR = os.getcwd()
+# --- Path setup compatible with teammate's files ---
+from pathlib import Path
 
-if os.getcwd() != SCRIPT_DIR:
-    os.chdir(SCRIPT_DIR)
+# Assume app is launched from the project root that contains "Cinema/"
+PROJECT_ROOT = Path.cwd()
+BASE = PROJECT_ROOT / "Cinema" / "Database"
+BASE.mkdir(parents=True, exist_ok=True)
 
-BASE = os.path.join("Database")
-os.makedirs(BASE, exist_ok=True)
-
-MOVIE_FILE       = os.path.join(BASE, "movie_listings.txt")
-SHOW_FILE        = os.path.join(BASE, "movie_showtimes.txt")
-CUSTOMER_FILE    = os.path.join(BASE, "customer.txt")
-BOOKING_FILE     = os.path.join(BASE, "movie_bookings.txt")
-AUD_SITTING_FILE = os.path.join(BASE, "auditorium_sitting.txt")
-DISCOUNT_FILE    = os.path.join(BASE, "discount_policies.txt")
+MOVIE_FILE       = str(BASE / "movie_listings.txt")
+SHOW_FILE        = str(BASE / "movie_showtimes.txt")     # teammate uses SHOWTIME_FILE
+CUSTOMER_FILE    = str(BASE / "customer.txt")
+BOOKING_FILE     = str(BASE / "movie_bookings.txt")
+AUD_SITTING_FILE = str(BASE / "auditorium_info.txt")     # teammate's file name
+DISCOUNT_FILE    = str(BASE / "discount_policies.txt")
 
 
 def safe_input(msg):
