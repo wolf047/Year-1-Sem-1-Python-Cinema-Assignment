@@ -1,13 +1,26 @@
+# --- Use relative paths anchored to the script folder ---
+import os
 
+try:
+    SCRIPT_DIR = os.path.dirname(__file__)       
+except NameError:                                  
+    SCRIPT_DIR = os.getcwd()
 
-# FILE PATHS (plain strings)
-BASE =  r"C:\Users\shann\Desktop\Comp-Science(AI)\Int-Python-programming\Assignment\Cinema\Database"
-MOVIE_FILE    = BASE + r"/movie_listings.txt"      # where movie rows are stored
-SHOW_FILE     = BASE + r"/movie_showtimes.txt"     # where showtime rows are stored
-CUSTOMER_FILE = BASE + r"/customer.txt"      # where customer rows are stored
-BOOKING_FILE  = BASE + r"/movie_bookings.txt"      # where booking rows are stored
-AUD_SITTING_FILE = BASE + r"/auditorium_sitting.txt"  # where auditorium seating layouts are stored
-DISCOUNT_FILE = BASE + r"/discount_policies.txt"  # where discount policies are stored
+# Make the script folder the working directory so relative paths are stable
+if os.getcwd() != SCRIPT_DIR:
+    os.chdir(SCRIPT_DIR)
+
+BASE = os.path.join("Database")                    # relative
+os.makedirs(BASE, exist_ok=True)
+
+# Relative file paths (no absolute components)
+MOVIE_FILE        = os.path.join(BASE, "movie_listings.txt")
+SHOW_FILE         = os.path.join(BASE, "movie_showtimes.txt")
+CUSTOMER_FILE     = os.path.join(BASE, "customer.txt")
+BOOKING_FILE      = os.path.join(BASE, "movie_bookings.txt")
+AUD_SITTING_FILE  = os.path.join(BASE, "auditorium_sitting.txt")
+DISCOUNT_FILE     = os.path.join(BASE, "discount_policies.txt")
+
 
 
 # BASIC INPUT / STRING HELPERS
@@ -22,7 +35,7 @@ def read_int(msg):                          # define a function that keeps askin
             return int(t)                   # convert to an integer and return it
         print("Please enter digits only.")  # if not digits, show error and loop again
 
-#  "GO BACK" HELPERS
+#  GO BACK HELPERS
 EXIT_HINT = " (Enter 0 to return to menu)"      # message shown at each prompt
 
 def read_int_or_menu(msg):                      # safe number input with 0 to exit
@@ -193,7 +206,7 @@ def load_auditorium_seats():                                   # read the seatin
                     seats_by_aud[current_aud].append(seat_id)  # add seat to that auditorium's list
     return seats_by_aud                                        # give back the full dictionary
 
-def pad2(n):                          # make 1 -> "01", 9 -> "09", 12 -> "12"
+def pad2(n):                          # make 1 -> "01", 12 -> "12"
     s = str(n)                        # turn number into string
     if len(s) < 2:                    # if shorter than 2 characters
         s = "0" + s                   # put a "0" in front (prefix)
@@ -232,7 +245,7 @@ def print_seat_map(aud_id, taken_seats, seats_by_aud):
         if c > max_col:
             max_col = c
 
-    # Sort rows alphabetically; each row's columns numerically
+    # Sort rows alphabetically, each row's columns numerically
     rows = []
     for r in row_to_cols:
         rows.append(r)
@@ -480,7 +493,7 @@ def seats_taken_for_show(showtime_id):                                   # make 
 
 # TASK 3: Book tickets / Cancel tickets
 def book_ticket():                                                     # TASK: guide user through selecting a show and booking seats
-    # 1) LOGIN (with exit)
+    # LOGIN (with exit)
     cid = ask_existing_customer_login()                                # ask for ID+password; returns None if user entered 0 at any prompt
     if cid is None:                                                    # user chose to exit
         return                                                         # go back to main menu
@@ -503,7 +516,7 @@ def book_ticket():                                                     # TASK: g
 
     # SHOW VISUAL SEAT MAP
     print("\n=== Seat Map ===\n")
-    print_seat_map(aud_id, taken, seats_map)                            # draws a grid: [ ] free, [X] taken (based on file)
+    print_seat_map(aud_id, taken, seats_map)                            # draws a grid: [ ] free, [X] taken 
     print("This show is in", aud_id + ". Seats will be checked against that auditorium.\n")
 
     # ASK USER FOR SEAT CODES (A01|A02|...) — allow exit; ensure they exist + not taken
@@ -519,14 +532,14 @@ def book_ticket():                                                     # TASK: g
             print("Enter at least one seat.\n")
             continue
 
-        # VALIDATION #1: typed seats must physically exist in this auditorium layout
+        # VALIDATION 1: typed seats must physically exist in this auditorium layout
         bad = [s for s in chosen if s not in valid_seats]
         if len(bad) > 0:
             print("These seats are not valid for", aud_id + ":", ", ".join(bad))
             print("Please choose seats that exist in", aud_id + ".\n")
             continue                                                    # re-ask
 
-        # VALIDATION #2: none of the chosen seats can be already taken for this showtime
+        # VALIDATION 2: none of the chosen seats can be already taken for this showtime
         conflict = False
         for s in chosen:
             if s in taken:
@@ -568,10 +581,7 @@ def book_ticket():                                                     # TASK: g
     disc = 0                                                            # default
     # only ask for discounted tickets if the showtime actually has a discount
     if the_show and the_show["discounted_price"] and the_show["discount_id"]:
-        tmp = read_int_or_menu("Discounted tickets (if you qualify)")
-        if tmp is None:
-            return
-        disc = tmp
+        disc = read_int("Discounted tickets (if you qualify; enter 0 if none): ")
 
     # SAVE BOOKING ROW
     bid = next_id_by_count(BOOKING_FILE, "B")                           # e.g., "B0007" based on number of rows
@@ -584,13 +594,13 @@ def book_ticket():                                                     # TASK: g
 
 
 def cancel_ticket():                                                     # TASK: let a logged-in user delete one of their bookings
-    # 1) READ FILE + LOGIN
+    # READ FILE + LOGIN
     lines = read_all_lines(BOOKING_FILE)                                 # list of text lines (header + rows)
     cid = ask_existing_customer_login()                                  # ask ID+password (0 to exit)
     if cid is None:                                                      # user chose to exit
         return
 
-    # 2) SHOW ONLY *THIS USER’S* BOOKINGS + COLLECT THEIR BOOKING IDS
+    # SHOW ONLY *THIS USER’S* BOOKINGS + COLLECT THEIR BOOKING IDS
     my_ids = []                                                          # will hold booking IDs that belong to this user
     print("=== Your Bookings ===")                                       # simple heading
     for i in range(1, len(lines)):                                       # start from 1 to skip header line at index 0
@@ -601,12 +611,12 @@ def cancel_ticket():                                                     # TASK:
             # small user-friendly summary of the row
             print("Booking:", parts[0], "| Show:", parts[1], "| Seats:", parts[3])
 
-    # 3) IF THE USER HAS NOTHING TO CANCEL, STOP EARLY
+    # IF THE USER HAS NOTHING TO CANCEL, STOP EARLY
     if len(my_ids) == 0:
         print("You have no bookings.")                                   # nothing to cancel for this user
         return
 
-    # 4) ASK WHICH BOOKING TO CANCEL (with exit)
+    # ASK WHICH BOOKING TO CANCEL (with exit)
     while True:
         bid = input_or_menu("Enter Booking ID to cancel")                # allow typing 0 to go back
         if bid is None:                                                  # user chose to exit
@@ -615,7 +625,7 @@ def cancel_ticket():                                                     # TASK:
             break                                                        # good → proceed to deletion
         print("That booking doesn't belong to you. Try again.")          # keep asking until valid
 
-    # 5) REWRITE FILE WITHOUT THE CHOSEN BOOKING
+    # REWRITE FILE WITHOUT THE CHOSEN BOOKING
     new_lines = [lines[0]]                                               # keep the header unchanged
     for i in range(1, len(lines)):                                       # for each data row
         parts = split_csv_line(lines[i])                                 # split row into fields
@@ -623,15 +633,18 @@ def cancel_ticket():                                                     # TASK:
             new_lines.append(lines[i])                                   # copy it forward
     write_all_lines(BOOKING_FILE, new_lines)                             # overwrite file safely with rows we kept
 
-    # 6) DONE
+    # DONE
     print("Booking", bid, "cancelled.")                                  # confirmation to the user
-1
+
 # Booking history / Seat info
 def view_booking_history():                                              # print all bookings for a given customer
     lines = read_all_lines(BOOKING_FILE)                                 # read all bookings
-    cid = ask_existing_customer_login()                                     # ask whose history
+    cid = ask_existing_customer_login()                                  # ask whose history
+    if cid is None:
+        return
     any_printed = False                                                  # track if we showed anything
     print("=== Booking History for", cid, "===")                         # heading
+
     for i in range(1, len(lines)):                                       # skip header
         parts = split_csv_line(lines[i])                                 # split row
         if len(parts) >= 3 and parts[2] == cid:                          # if row belongs to this customer
@@ -646,7 +659,7 @@ def view_booking_history():                                              # print
 
 
 
-# MENU (only the 4 tasks)
+# MENU 
 def main_customer():                                                      # main menu loop
     while True:                                                          # keep showing options until user exits
         print("\n=== CUSTOMER MENU ===")                                 # a blank line then the title
@@ -656,7 +669,7 @@ def main_customer():                                                      # main
         print("[4] Book tickets")                                        # option 4
         print("[5] Cancel my ticket")                                    # option 5
         print("[6] View my booking history")                             # option 6
-        print("[0] Exit")                                                # option 0   <-- REMOVED the old [7] line
+        print("[0] Exit")                                                # option 0 to exit
         choice = read_int("Enter your choice: ")                         # read a number safely
 
         if choice == 1:   register_customer()                            # run register
@@ -667,7 +680,7 @@ def main_customer():                                                      # main
         elif choice == 6: view_booking_history()                         # run history
         elif choice == 0:                                                 # exit
             print("Goodbye!")                                            # goodbye text
-            main()
+            # main()
             break                                                        # leave the loop and end program
         else:
             print("Invalid choice. Try again.")                          # anything else -> errors then loop
