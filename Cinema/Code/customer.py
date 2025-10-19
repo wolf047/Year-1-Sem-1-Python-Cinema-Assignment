@@ -461,7 +461,7 @@ def seats_taken_for_show(showtime_id):
     return taken
 
 
-def book_ticket():
+def book_tickets():
     cid = ask_existing_customer_login()
     if cid is None:
         return
@@ -615,16 +615,12 @@ def main_customer():
         if choice == 1:   register_customer()
         elif choice == 2: update_my_details()
         elif choice == 3: view_all_movie_showtimes()
-        elif choice == 4: book_ticket()
+        elif choice == 4: book_tickets()
         elif choice == 5: cancel_ticket()
         elif choice == 6: view_booking_history()
         elif choice == 0:
             print("Goodbye!")
-            # main()
+            main()
             break
         else:
             print("Invalid choice. Try again.")
-
-
-if __name__ == "__main__":
-    main_customer()

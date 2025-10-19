@@ -528,3 +528,4 @@ def main():
             print("\nERROR: Something went wrong!")
             input("Press Enter to continue...")
 
+main()
